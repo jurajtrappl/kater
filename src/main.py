@@ -48,8 +48,8 @@ def main() -> None:
             if event.type == pygame.QUIT:
                 # TODO: character save
                 pygame.time.wait(500)
-                pygame.quit()
                 running = False
+                pygame.quit()
             elif event.type == REFILL_ENERGY:
                 player.energy = min(
                     player.energy + config["rates"]["base_energy_refill"],
