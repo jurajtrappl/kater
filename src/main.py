@@ -19,6 +19,8 @@ from engine.events import *
 from ui.button import Button
 from ui.label import PlayerAttributeLabel
 
+user_text = ''
+listen_to_input = False
 
 def main() -> None:
     """
@@ -43,13 +45,13 @@ def main() -> None:
 
     running = True
     while running:
+        global listen_to_input
         # Poll for events.
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 # TODO: character save
-                pygame.time.wait(500)
-                pygame.quit()
                 running = False
+                break
             elif event.type == REFILL_ENERGY:
                 player.energy = min(
                     player.energy + config["rates"]["base_energy_refill"],
@@ -60,10 +62,24 @@ def main() -> None:
                     player.hitpoints + config["rates"]["base_hitpoints_refill"],
                     config["caps"]["hitpoints"],
                 )
+            if event.type == pygame.KEYDOWN and listen_to_input:
+                global user_text
+
+                if event.key == pygame.K_BACKSPACE:
+                    user_text = user_text[:-1]    
+                elif event.key == pygame.K_RETURN:
+                    listen_to_input = False
+                    player.save('saved/'+user_text)
+                    user_text = ''
+                else:
+                    user_text += event.unicode
 
         draw_ui(
             screen, content_area, objects, sidebar_vertical_line, top_horizontal_line
         )
+
+    pygame.time.wait(500)
+    pygame.quit()
 
 
 def configure_pygame(global_config: Dict[str, object]):
@@ -170,13 +186,16 @@ def init_ui_objects(
     skills_button = Button(10, 190, 150, 50, sidebar_font, "Skills", show_skills(content_area, content_font))
     explore_button = Button(10, 250, 150, 50, sidebar_font, "Explore", show_explore(content_area, content_font))
 
-    export_button = Button(10, 610, 150, 50, sidebar_font, "Export", lambda: None)
+    export_button = Button(10, 610, 150, 50, sidebar_font, "Export", get_user_input)
     objects.extend(
         [inventory_button, travel_button, skills_button, explore_button, export_button]
     )
 
     return objects, top_horizontal_line, sidebar_vertical_line, content_area
 
+def get_user_input():
+    global listen_to_input
+    listen_to_input = not listen_to_input
 
 def draw_ui(screen, content_area, objects, sidebar_vertical_line, top_horizontal_line):
     # Clear the screen.
@@ -194,6 +213,12 @@ def draw_ui(screen, content_area, objects, sidebar_vertical_line, top_horizontal
     # Update the labels to reflect current player's properties.
     for obj in objects:
         obj.process(screen)
+
+    if listen_to_input:
+        base_fort = pygame.font.Font(None, 32)
+        global user_text
+        text_surface = base_fort.render("Filename: " + user_text, True, (0,0,0))
+        screen.blit(text_surface, (180, 90))
 
     pygame.display.flip()
 

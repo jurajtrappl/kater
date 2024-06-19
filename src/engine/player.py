@@ -42,7 +42,7 @@ class Player:
         try:
             p = Path(path)
             with p.open("w", encoding="utf-8") as f:
-                f.write(f"{self._energy} {self._hitpoints} {self._balance} {self._level}")
+                f.write(f"{self._energy} {self._hitpoints} {self._balance} {self._level}\n")
         except IOError as e:
             print(f"An error occurred while saving to {path}: {e}")
 
