@@ -25,7 +25,7 @@ class Button:
         self._button_surf = font.render(text, True, pygame.Color("black"))
 
         self._fill_colors = {
-            "normal": pygame.Color("lightgoldenrod"),
+            "normal": pygame.Color("gray"),
             "hover": pygame.Color("lightgoldenrod1"),
             "pressed": pygame.Color("lightgoldenrod2"),
         }
