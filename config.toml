@@ -20,3 +20,6 @@ base_energy_refill = 1          # how much energy is going to refill per 1 time 
 base_hitpoints_refill = 1       # how much hitpoints is going to refill per 1 time unit
 energy = 1000          # 1 energy per 1 second
 hitpoints = 1000       # 1 hitpoints per 1 second
+
+[inventory]
+size = 12
