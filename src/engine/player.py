@@ -3,6 +3,7 @@ from typing import List, Tuple
 
 from engine.item import Item
 
+
 class Player:
     def __init__(self, character_save_path: Path) -> None:
         self._load_from(character_save_path)
@@ -10,7 +11,7 @@ class Player:
     @property
     def energy(self) -> int:
         return self._energy
-    
+
     @energy.setter
     def energy(self, value) -> None:
         self._energy = value
@@ -18,7 +19,7 @@ class Player:
     @property
     def hitpoints(self) -> int:
         return self._hitpoints
-    
+
     @hitpoints.setter
     def hitpoints(self, value) -> None:
         self._hitpoints = value
@@ -26,7 +27,7 @@ class Player:
     @property
     def balance(self) -> int:
         return self._balance
-    
+
     @balance.setter
     def balance(self, value) -> None:
         self._balance = value
@@ -34,7 +35,7 @@ class Player:
     @property
     def level(self) -> int:
         return self._level
-    
+
     @level.setter
     def level(self, value) -> int:
         self._level = value
@@ -48,7 +49,9 @@ class Player:
         try:
             p = Path(path)
             with p.open("w", encoding="utf-8") as f:
-                f.write(f"{self._energy} {self._hitpoints} {self._balance} {self._level}\n")
+                f.write(
+                    f"{self._energy} {self._hitpoints} {self._balance} {self._level}\n"
+                )
                 for item, quantity in self._inventory:
                     f.write(f"{item.name},{item.resource_path},{quantity}\n")
         except IOError as e:
@@ -59,13 +62,17 @@ class Player:
             with Path(path).open("r", encoding="utf-8") as f:
                 data = f.read().splitlines()
 
-                self._energy, self._hitpoints, self._balance, self._level = map(int, data[0].split())
-                
+                self._energy, self._hitpoints, self._balance, self._level = map(
+                    int, data[0].split()
+                )
+
                 self._inventory = []
                 if len(data) > 1:
                     for item in data[1:]:
                         item_name, item_resource_path, quantity = item.split(",")
-                        self._inventory.append((Item(item_name, item_resource_path), quantity))
-                
+                        self._inventory.append(
+                            (Item(item_name, item_resource_path), quantity)
+                        )
+
         except (IOError, ValueError) as e:
             print(f"An error occurred while loading from {path}: {e}")

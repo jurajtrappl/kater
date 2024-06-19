@@ -33,8 +33,7 @@ def main() -> None:
     # Create UI objects.
     global CONTENT_AREA
     (
-        screen_objects,
-        content_objects,
+        objects,
         top_horizontal_line,
         sidebar_vertical_line,
         CONTENT_AREA,
@@ -67,7 +66,7 @@ def main() -> None:
 
                 clicked_button = [
                     obj
-                    for obj in screen_objects
+                    for obj in objects["buttons"]
                     if isinstance(obj, Button) and obj.rect.collidepoint(pos)
                 ]
                 if clicked_button:
@@ -76,16 +75,10 @@ def main() -> None:
         """
         2. Update objects.
         """
-        for obj in screen_objects:
-            if isinstance(obj, PlayerAttributeLabel):
-                obj.update(player)
+        for label in objects["labels"]:
+            label.update(player)
 
-        active_content_objects = [
-            obj
-            for obj, obj_type in content_objects
-            if obj_type == GAME_STATE["clicked_sidebar_button"]
-        ]
-        for obj in active_content_objects:
+        for obj in objects[GAME_STATE["clicked_sidebar_button"]]:
             obj.update(player)
 
         """
@@ -105,7 +98,10 @@ def main() -> None:
         )
 
         # Draw objects on screen (top menu labels + sidebar buttons).
-        for obj in screen_objects:
+        for obj in objects["labels"]:
+            obj.draw(SCREEN, FONTS["player_attribute_font"])
+
+        for obj in objects["buttons"]:
             obj.draw(SCREEN)
 
         # Draw the content area.
@@ -114,7 +110,7 @@ def main() -> None:
         )
 
         # Draw objects in content area.
-        for obj in active_content_objects:
+        for obj in objects[GAME_STATE["clicked_sidebar_button"]]:
             obj.draw(CONTENT_AREA)
 
         """
@@ -162,8 +158,6 @@ def configure_engine():
 
 
 def init_ui_objects(player) -> List[object]:
-    screen_objects, content_objects = [], []
-
     # 1. Visual separation.
     top_horizontal_line = pygame.draw.line(
         SCREEN, pygame.Color("black"), (0, 50), (SCREEN.get_width(), 50)
@@ -181,39 +175,32 @@ def init_ui_objects(player) -> List[object]:
     )
 
     # 3. Main attributes labels
+    objects = {}
     energy_label = PlayerAttributeLabel(
         200,
         15,
-        FONTS["player_attribute_font"],
         "energy",
         pygame.Color("yellow3"),
-        lambda value: f"Energy: {value}",
     )
     hitpoints_label = PlayerAttributeLabel(
         400,
         15,
-        FONTS["player_attribute_font"],
         "hitpoints",
         pygame.Color("red"),
-        lambda value: f"Hitpoints: {value}",
     )
     balance_label = PlayerAttributeLabel(
         600,
         15,
-        FONTS["player_attribute_font"],
         "balance",
         pygame.Color("palegreen3"),
-        lambda value: f"Balance: {value} $",
     )
     level_label = PlayerAttributeLabel(
         800,
         15,
-        FONTS["player_attribute_font"],
         "level",
         pygame.Color("black"),
-        lambda value: f"Level: {value}",
     )
-    screen_objects.extend([energy_label, hitpoints_label, balance_label, level_label])
+    objects["labels"] = [energy_label, hitpoints_label, balance_label, level_label]
 
     # 4. Menu buttons.
     inventory_button = Button(
@@ -248,19 +235,21 @@ def init_ui_objects(player) -> List[object]:
         FONTS["sidebar_font"],
         "Explore",
     )
-
     export_button = Button(10, 610, 150, 50, FONTS["sidebar_font"], "Export")
-    screen_objects.extend(
-        [inventory_button, travel_button, skills_button, explore_button, export_button]
-    )
+    objects["buttons"] = [
+        inventory_button,
+        travel_button,
+        skills_button,
+        explore_button,
+        export_button,
+    ]
 
-    # 5. Inventory grid
-    inventory_grid = InventoryGrid(CONFIG["inventory"]["size"], FONTS["inventory_font"])
-    content_objects.append((inventory_grid, "Inventory"))
+    objects["Inventory"] = [
+        InventoryGrid(CONFIG["inventory"]["size"], FONTS["inventory_font"])
+    ]
 
     return (
-        screen_objects,
-        content_objects,
+        objects,
         top_horizontal_line,
         sidebar_vertical_line,
         content_area,
