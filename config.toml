@@ -1,0 +1,21 @@
+[caps]
+energy = 100        # max limit of energy
+hitpoints = 100     # max hitpoints
+level = 100         # max level
+
+[display]
+size = [1280, 720]
+caption = "Kater"
+
+[fonts]
+player_attribute_font = "Arial"
+player_attribute_font_size = 36
+
+[globals]
+seed = 38           # for reproducibility
+
+[rates]
+base_energy_refill = 1          # how much energy is going to refill per 1 time unit
+base_hitpoints_refill = 1       # how much hitpoints is going to refill per 1 time unit
+energy = 1000          # 1 energy per 1 second
+hitpoints = 1000       # 1 hitpoints per 1 second
