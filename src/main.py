@@ -1,13 +1,3 @@
-"""
-Kater
------
-
-Entry point.
-
-Authors: [Trappl, Juraj;]
-
-"""
-
 from pathlib import Path
 import random
 from typing import Dict, List
@@ -237,6 +227,12 @@ def show_inventory(content_area):
             "Inventory Content", True, pygame.Color("black")
         )
         content_area.blit(inventory_text, (20, 20))
+
+        for i in range(CONFIG["inventory"]["size"]):
+            item_rect = pygame.Rect(20 * i + 20, i // 3 * 50, 30, 30)
+            pygame.draw.rect(SCREEN, pygame.Color("white"), item_rect, 1)
+
+        pygame.display.update()
 
     return callback
 
