@@ -40,11 +40,11 @@ def main(cmd_args: argparse.Namespace) -> None:
     player = Player(character_save_path)
 
     # Run configurations.
-    screen, _, font = configure_pygame(config)
+    screen, _, player_attribute_font, sidebar_font = configure_pygame(config)
     configure_engine(config)
 
     # Create UI objects.
-    objects = init_ui_objects(font, player)
+    objects = init_ui_objects(player_attribute_font, sidebar_font, player)
     
     running = True
     while running:
@@ -79,9 +79,6 @@ def main(cmd_args: argparse.Namespace) -> None:
             screen, pygame.Color("black"), (170, 50), (170, screen.get_height()), 1
         )
 
-        content = pygame.Surface((500, 500))
-        screen.blit(main, ())
-
         pygame.display.flip()
 
 
@@ -107,7 +104,7 @@ def configure_pygame(global_config: Dict[str, object]):
     pygame.time.set_timer(REFILL_ENERGY, global_config["rates"]["energy"])
     pygame.time.set_timer(REFILL_HITPOINTS, global_config["rates"]["hitpoints"])
 
-    return screen, clock, font
+    return screen, clock, player_attribute_font, sidebar_font
 
 
 def configure_engine(global_config: Dict[str, object]):
@@ -118,31 +115,31 @@ def configure_engine(global_config: Dict[str, object]):
     # for reproducibility when we will use something random
     random.seed(global_config["globals"]["seed"])
 
-def init_ui_objects(font, player) -> List[object]:
+def init_ui_objects(player_attribute_font, sidebar_font, player) -> List[object]:
     objects = []
     
     # Main attributes labels
     energy_label = PlayerAttributeLabel(
-        200, 15, font, player, "energy", pygame.Color("yellow3"), lambda value: f"Energy: {value}"
+        200, 15, player_attribute_font, player, "energy", pygame.Color("yellow3"), lambda value: f"Energy: {value}"
     )
     hitpoints_label = PlayerAttributeLabel(
-        400, 15, font, player, "hitpoints", pygame.Color("red"), lambda value: f"Hitpoints: {value}"
+        400, 15, player_attribute_font, player, "hitpoints", pygame.Color("red"), lambda value: f"Hitpoints: {value}"
     )
     balance_label = PlayerAttributeLabel(
-        600, 15, font, player, "balance", pygame.Color("palegreen3"), lambda value: f"Balance: {value} $"
+        600, 15, player_attribute_font, player, "balance", pygame.Color("palegreen3"), lambda value: f"Balance: {value} $"
     )
     level_label = PlayerAttributeLabel(
-        800, 15, font, player, "level", pygame.Color("black"), lambda value: f"Level: {value}"
+        800, 15, player_attribute_font, player, "level", pygame.Color("black"), lambda value: f"Level: {value}"
     )
     objects.extend([energy_label, hitpoints_label, balance_label, level_label])
 
     # TODO: Menu buttons.
-    inventory_button = Button(10, 70, 150, 50, font, "Inventory", lambda: None)
-    travel_button = Button(10, 130, 150, 50, font, "Travel", lambda: None)
-    skills_button = Button(10, 190, 150, 50, font, "Skills", lambda: None)
-    explore_button = Button(10, 250, 150, 50, font, "Explore", lambda: None)
+    inventory_button = Button(10, 70, 150, 50, sidebar_font, "Inventory", lambda: None)
+    travel_button = Button(10, 130, 150, 50, sidebar_font, "Travel", lambda: None)
+    skills_button = Button(10, 190, 150, 50, sidebar_font, "Skills", lambda: None)
+    explore_button = Button(10, 250, 150, 50, sidebar_font, "Explore", lambda: None)
 
-    export_button = Button(10, 610, 150, 50, font, "Export", lambda: None)
+    export_button = Button(10, 610, 150, 50, sidebar_font, "Export", lambda: None)
     objects.extend([inventory_button, travel_button, skills_button, explore_button, export_button])
 
     return objects

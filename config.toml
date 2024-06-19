@@ -8,8 +8,8 @@ size = [1280, 720]
 caption = "Kater"
 
 [fonts]
-player_attribute_font = "Arial"
 player_attribute_font_size = 36
+sidebar_font_size = 24
 
 [globals]
 seed = 38           # for reproducibility
