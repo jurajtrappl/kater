@@ -33,12 +33,12 @@ def main() -> None:
     player = Player(Path("example_players/player1"))
 
     # Run configurations.
-    screen, player_attribute_font, sidebar_font = configure_pygame(config)
+    screen, player_attribute_font, sidebar_font, content_font = configure_pygame(config)
     configure_engine(config)
 
     # Create UI objects.
     objects, top_horizontal_line, sidebar_vertical_line, content_area = init_ui_objects(
-        screen, player_attribute_font, sidebar_font, player
+        screen, player_attribute_font, sidebar_font, content_font, player
     )
 
     running = True
@@ -84,11 +84,14 @@ def configure_pygame(global_config: Dict[str, object]):
     sidebar_font = pygame.font.SysFont(
         None, global_config["fonts"]["sidebar_font_size"]
     )
+    content_font = pygame.font.SysFont(
+        None, global_config["fonts"]["content_font_size"]
+    )
 
     pygame.time.set_timer(REFILL_ENERGY, global_config["rates"]["energy"])
     pygame.time.set_timer(REFILL_HITPOINTS, global_config["rates"]["hitpoints"])
 
-    return screen, player_attribute_font, sidebar_font
+    return screen, player_attribute_font, sidebar_font, content_font
 
 
 def configure_engine(global_config: Dict[str, object]):
@@ -101,11 +104,28 @@ def configure_engine(global_config: Dict[str, object]):
 
 
 def init_ui_objects(
-    screen, player_attribute_font, sidebar_font, player
+    screen, player_attribute_font, sidebar_font, content_font, player
 ) -> List[object]:
     objects = []
 
-    # 1. Main attributes labels
+    # 1. Visual separation.
+    top_horizontal_line = pygame.draw.line(
+        screen, pygame.Color("black"), (0, 50), (screen.get_width(), 50)
+    )
+    sidebar_vertical_line = pygame.draw.line(
+        screen, pygame.Color("black"), (170, 50), (170, screen.get_height())
+    )
+
+    # 2. Content area.
+    content_area = pygame.Surface(
+        (
+            screen.get_width() - sidebar_vertical_line.width,
+            screen.get_height() - top_horizontal_line.height,
+        )
+    )
+    content_area.fill(pygame.Color("white"))
+
+    # 3. Main attributes labels
     energy_label = PlayerAttributeLabel(
         200,
         15,
@@ -144,33 +164,16 @@ def init_ui_objects(
     )
     objects.extend([energy_label, hitpoints_label, balance_label, level_label])
 
-    # 2. Menu buttons.
-    inventory_button = Button(10, 70, 150, 50, sidebar_font, "Inventory", lambda: None)
-    travel_button = Button(10, 130, 150, 50, sidebar_font, "Travel", lambda: None)
-    skills_button = Button(10, 190, 150, 50, sidebar_font, "Skills", lambda: None)
-    explore_button = Button(10, 250, 150, 50, sidebar_font, "Explore", lambda: None)
+    # 4. Menu buttons.
+    inventory_button = Button(10, 70, 150, 50, sidebar_font, "Inventory", show_inventory(content_area, content_font))
+    travel_button = Button(10, 130, 150, 50, sidebar_font, "Travel", show_travel(content_area, content_font))
+    skills_button = Button(10, 190, 150, 50, sidebar_font, "Skills", show_skills(content_area, content_font))
+    explore_button = Button(10, 250, 150, 50, sidebar_font, "Explore", show_explore(content_area, content_font))
 
     export_button = Button(10, 610, 150, 50, sidebar_font, "Export", lambda: None)
     objects.extend(
         [inventory_button, travel_button, skills_button, explore_button, export_button]
     )
-
-    # 3. Visual separation.
-    top_horizontal_line = pygame.draw.line(
-        screen, pygame.Color("black"), (0, 50), (screen.get_width(), 50)
-    )
-    sidebar_vertical_line = pygame.draw.line(
-        screen, pygame.Color("black"), (170, 50), (170, screen.get_height())
-    )
-
-    # 4. Content area.
-    content_area = pygame.Surface(
-        (
-            screen.get_width() - sidebar_vertical_line.width,
-            screen.get_height() - top_horizontal_line.height,
-        )
-    )
-    content_area.fill(pygame.Color("white"))
 
     return objects, top_horizontal_line, sidebar_vertical_line, content_area
 
@@ -194,6 +197,49 @@ def draw_ui(screen, content_area, objects, sidebar_vertical_line, top_horizontal
 
     pygame.display.flip()
 
+def show_inventory(content_area, content_font):
+    def callback():
+        # Clear content from any previous work.
+        content_area.fill(pygame.Color("white"))
+        
+        # Inventory specific stuff.
+        inventory_text = content_font.render("Inventory Content", True, pygame.Color("black"))
+        content_area.blit(inventory_text, (20, 20))
+
+    return callback
+
+def show_travel(content_area, content_font):
+    def callback():
+        # Clear content from any previous work.
+        content_area.fill(pygame.Color("white"))
+        
+        # Travel specific stuff.
+        travel_text = content_font.render("Travel Content", True, pygame.Color("black"))
+        content_area.blit(travel_text, (20, 20))
+
+    return callback
+
+def show_skills(content_area, content_font):
+    def callback():
+        # Clear content from any previous work.
+        content_area.fill(pygame.Color("white"))
+        
+        # Skills specific stuff.
+        skills_text = content_font.render("Skills Content", True, pygame.Color("black"))
+        content_area.blit(skills_text, (20, 20))
+
+    return callback
+
+def show_explore(content_area, content_font):
+    def callback():
+        # Clear content from any previous work.
+        content_area.fill(pygame.Color("white"))
+        
+        # Explore specific stuff.
+        explore_text = content_font.render("Explore Content", True, pygame.Color("black"))
+        content_area.blit(explore_text, (20, 20))
+
+    return callback
 
 if __name__ == "__main__":
     main()

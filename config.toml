@@ -10,6 +10,7 @@ caption = "Kater"
 [fonts]
 player_attribute_font_size = 36
 sidebar_font_size = 24
+content_font_size = 30
 
 [globals]
 seed = 38           # for reproducibility
