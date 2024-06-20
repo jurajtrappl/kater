@@ -37,6 +37,10 @@ class Button:
                 self._button_rect.width / 2 - self._button_surf.get_rect().width / 2,
                 self._button_rect.height / 2 - self._button_surf.get_rect().height / 2,
             ],
+
         )
 
         screen.blit(self._button_surface, self._button_rect)
+
+    def invoke(self, game_state) -> None:
+        game_state["clicked_sidebar_button"] = self._text

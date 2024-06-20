@@ -31,16 +31,10 @@ def main() -> None:
     player = Player(Path("example_players/player1"))
 
     # Create UI objects.
-    global CONTENT_AREA
-    (
-        objects,
-        top_horizontal_line,
-        sidebar_vertical_line,
-        CONTENT_AREA,
-    ) = init_ui_objects(player)
+    top_menu_objects, sidebar_objects, content_area_objects = init_ui_objects()
 
     global GAME_STATE
-    GAME_STATE = {"clicked_sidebar_button": "Inventory"}
+    GAME_STATE = {"clicked_sidebar_button": "Inventory", "explore": None}
 
     running = True
     while running:
@@ -61,25 +55,33 @@ def main() -> None:
                     player.hitpoints + CONFIG["rates"]["base_hitpoints_refill"],
                     CONFIG["caps"]["hitpoints"],
                 )
-            if event.type == pygame.MOUSEBUTTONUP:
+            elif event.type == pygame.MOUSEBUTTONUP:
                 pos = pygame.mouse.get_pos()
 
                 clicked_button = [
-                    obj
-                    for obj in objects["buttons"]
-                    if isinstance(obj, Button) and obj.rect.collidepoint(pos)
+                    obj for obj in sidebar_objects if obj.rect.collidepoint(pos)
                 ]
                 if clicked_button:
-                    GAME_STATE["clicked_sidebar_button"] = clicked_button[0].text
+                    clicked_button[0].invoke(GAME_STATE)
+            elif event.type == SHORT_EXPLORE:
+                # TODO: add handling of short explore action
+                pass
+            elif event.type == MEDIUM_EXPLORE:
+                # TODO: add handling of medium explore action
+                pass
+            elif event.type == LONG_EXPLORE:
+                # TODO: add handling of long explore
+                pass
 
         """
         2. Update objects.
         """
-        for label in objects["labels"]:
+        for label in top_menu_objects:
             label.update(player)
 
-        for obj in objects[GAME_STATE["clicked_sidebar_button"]]:
-            obj.update(player)
+        for obj in content_area_objects[GAME_STATE["clicked_sidebar_button"]]:
+            if not isinstance(obj, Button):
+                obj.update(player)
 
         """
         3. Clear the screen.
@@ -89,6 +91,17 @@ def main() -> None:
         """
         4. Draw objects.
         """
+        # Draw objects in content area.
+        for obj in content_area_objects[GAME_STATE["clicked_sidebar_button"]]:
+            obj.draw(SCREEN)
+
+        # Draw objects on screen (top menu labels + sidebar buttons).
+        for obj in top_menu_objects:
+            obj.draw(SCREEN, FONTS["player_attribute_font"])
+
+        for obj in sidebar_objects:
+            obj.draw(SCREEN)
+
         # Separate top menu and side bar from content.
         pygame.draw.line(
             SCREEN, pygame.Color("black"), (0, 50), (SCREEN.get_width(), 50)
@@ -96,22 +109,6 @@ def main() -> None:
         pygame.draw.line(
             SCREEN, pygame.Color("black"), (170, 50), (170, SCREEN.get_height())
         )
-
-        # Draw objects on screen (top menu labels + sidebar buttons).
-        for obj in objects["labels"]:
-            obj.draw(SCREEN, FONTS["player_attribute_font"])
-
-        for obj in objects["buttons"]:
-            obj.draw(SCREEN)
-
-        # Draw the content area.
-        SCREEN.blit(
-            CONTENT_AREA, (sidebar_vertical_line.right, top_horizontal_line.bottom)
-        )
-
-        # Draw objects in content area.
-        for obj in objects[GAME_STATE["clicked_sidebar_button"]]:
-            obj.draw(CONTENT_AREA)
 
         """
         5. Update screen.
@@ -157,25 +154,8 @@ def configure_engine():
     pygame.time.set_timer(REFILL_HITPOINTS, CONFIG["rates"]["hitpoints"])
 
 
-def init_ui_objects(player) -> List[object]:
-    # 1. Visual separation.
-    top_horizontal_line = pygame.draw.line(
-        SCREEN, pygame.Color("black"), (0, 50), (SCREEN.get_width(), 50)
-    )
-    sidebar_vertical_line = pygame.draw.line(
-        SCREEN, pygame.Color("black"), (170, 50), (170, SCREEN.get_height())
-    )
-
-    # 2. Content area.
-    content_area = pygame.Surface(
-        (
-            SCREEN.get_width() - sidebar_vertical_line.width,
-            SCREEN.get_height() - top_horizontal_line.height,
-        )
-    )
-
-    # 3. Main attributes labels
-    objects = {}
+def init_ui_objects() -> List[object]:
+    # 1. Top menu labels
     energy_label = PlayerAttributeLabel(
         200,
         15,
@@ -200,9 +180,9 @@ def init_ui_objects(player) -> List[object]:
         "level",
         pygame.Color("black"),
     )
-    objects["labels"] = [energy_label, hitpoints_label, balance_label, level_label]
+    top_menu_objects = [energy_label, hitpoints_label, balance_label, level_label]
 
-    # 4. Menu buttons.
+    # 2. Sidebar buttons.
     inventory_button = Button(
         10,
         70,
@@ -236,7 +216,7 @@ def init_ui_objects(player) -> List[object]:
         "Explore",
     )
     export_button = Button(10, 610, 150, 50, FONTS["sidebar_font"], "Export")
-    objects["buttons"] = [
+    sidebar_objects = [
         inventory_button,
         travel_button,
         skills_button,
@@ -244,15 +224,20 @@ def init_ui_objects(player) -> List[object]:
         export_button,
     ]
 
-    objects["Inventory"] = [
+    content_area_objects = {}
+    content_area_objects["Inventory"] = [
         InventoryGrid(CONFIG["inventory"]["size"], FONTS["inventory_font"])
+    ]
+    content_area_objects["Explore"] = [
+        Button(350, 250, 250, 50, FONTS["content_font"], "Short (5 min, 10e)"),
+        Button(350, 350, 250, 50, FONTS["content_font"], "Medium (30 min, 20e)"),
+        Button(350, 450, 250, 50, FONTS["content_font"], "Short (1 h, 30e)"),
     ]
 
     return (
-        objects,
-        top_horizontal_line,
-        sidebar_vertical_line,
-        content_area,
+        top_menu_objects,
+        sidebar_objects,
+        content_area_objects,
     )
 
 
