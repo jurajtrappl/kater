@@ -265,7 +265,7 @@ def init_ui_objects() -> List[object]:
             f'Long ({CONFIG["explore"]["long_duration"] // 1000}s, {CONFIG["explore"]["long_energy"]}e)',
             long_explore_onclick,
         ),
-        ExploreActionLabel(750, 375, pygame.Color("black")),
+        ExploreActionLabel(750, 370, pygame.Color("black")),
     ]
 
     return top_menu_objects, sidebar_objects, content_area_objects
