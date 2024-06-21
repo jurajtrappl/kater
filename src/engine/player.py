@@ -1,6 +1,6 @@
 from pathlib import Path
-from typing import List, Tuple
 
+from engine.inventory import Inventory
 from engine.item import Item
 
 
@@ -41,13 +41,13 @@ class Player:
         self._level = value
 
     @property
-    def inventory(self) -> List[Tuple[Item, int]]:
+    def inventory(self) -> Inventory:
         return self._inventory
 
     @property
     def experience(self) -> int:
         return self._experience
-    
+
     @experience.setter
     def experience(self, value) -> None:
         self._experience = value
@@ -70,16 +70,20 @@ class Player:
             with Path(path).open("r", encoding="utf-8") as f:
                 data = f.read().splitlines()
 
-                self._energy, self._hitpoints, self._balance, self._level, self._experience = map(
-                    int, data[0].split()
-                )
+                (
+                    self._energy,
+                    self._hitpoints,
+                    self._balance,
+                    self._level,
+                    self._experience,
+                ) = map(int, data[0].split())
 
-                self._inventory = []
+                self._inventory = Inventory()
                 if len(data) > 1:
                     for item in data[1:]:
                         item_name, item_resource_path, quantity = item.split(",")
-                        self._inventory.append(
-                            (Item(item_name, item_resource_path), quantity)
+                        self._inventory.add(
+                            Item(item_name, item_resource_path), int(quantity)
                         )
 
         except (IOError, ValueError) as e:

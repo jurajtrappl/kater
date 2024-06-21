@@ -12,6 +12,8 @@ player_attribute_font_size = 36
 sidebar_font_size = 24
 content_font_size = 28
 inventory_font_size = 16
+skills_font_size = 18
+explore_font_size = 20
 
 [globals]
 seed = 38           # for reproducibility
@@ -25,13 +27,79 @@ hitpoints = 1000                # 1 hitpoints per 1 second
 [inventory]
 size = 12
 
+[skills]
+
+[skills.mining]
+
+[skills.mining.energy]
+copper_ore = 5
+silver_ore = 10
+
+[skills.mining.duration]
+copper_ore = 5000
+silver_ore = 10000
+
+[skills.mining.experience]
+copper_ore = 1
+silver_ore = 2
+
+[skills.woodcutting]
+
+[skills.woodcutting.energy]
+oak_log = 5
+
+[skills.woodcutting.duration]
+oak_log = 5000
+
+[skills.woodcutting.experience]
+oak_log = 1
+
+[skills.fishing]
+
+[skills.fishing.energy]
+carp = 5
+
+[skills.fishing.duration]
+carp = 5000
+
+[skills.fishing.experience]
+carp = 1
+
+[skills.herbalism]
+
+[skills.herbalism.energy]
+mugwort = 5
+
+[skills.herbalism.duration]
+mugwort = 5000
+
+[skills.herbalism.experience]
+mugwort = 1
+
+[skills.divination]
+
+[skills.divination.energy]
+quartz = 5
+
+[skills.divination.duration]
+quartz = 5000
+
+[skills.divination.experience]
+quartz = 1
+
 [explore]
-short_energy = 10               # energy cost of the Short explore action
-short_duration = 5000          # 10s
-short_experience = 10            # how much experience is awarded per finished short explore action
-medium_energy = 20              # energy cost of the Medium explore action
-medium_duration = 10000         # 20s
-medium_experience = 20          # how much experience is awarded per finished medium explore action
-long_energy = 30                # energy cost of the Long explore action
-long_duration = 15000           # 30s
-long_experience = 30            # how much experience is awarded per finished long explore action
+
+[explore.energy]
+short = 10               # energy cost of the Short explore action
+medium = 20              # energy cost of the Medium explore action
+long = 30                # energy cost of the Long explore action
+
+[explore.duration]
+short = 5000          # 5s
+medium = 10000         # 10s
+long = 15000           # 15s
+
+[explore.experience]
+short = 10            # how much experience is awarded per finished short explore action
+medium = 20          # how much experience is awarded per finished medium explore action
+long = 30            # how much experience is awarded per finished long explore action
