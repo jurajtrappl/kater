@@ -5,8 +5,9 @@ from engine.player import Player
 
 
 class InventoryGrid:
-    def __init__(self, size) -> None:
+    def __init__(self, size, font) -> None:
         self._size = size
+        self._font = font
 
     def update(self, game_state) -> None:
         self._inventory_items = sorted(
@@ -15,6 +16,8 @@ class InventoryGrid:
 
     def draw(self, content_area: pygame.Surface, font: pygame.font.Font) -> None:
         content_area.fill(pygame.Color("white"))
+
+        self._font = self._font or font
 
         # make square slots for items
         rows, cols = self._size // 4, 4
@@ -46,7 +49,7 @@ class InventoryGrid:
                 item_image_surface, (item_rect.width, item_rect.height)
             )
 
-            quantity_text = font.render(
+            quantity_text = self._font.render(
                 f"{quantity}x {item.name}", True, pygame.Color("black")
             )
 
