@@ -44,13 +44,21 @@ class Player:
     def inventory(self) -> List[Tuple[Item, int]]:
         return self._inventory
 
+    @property
+    def experience(self) -> int:
+        return self._experience
+    
+    @experience.setter
+    def experience(self, value) -> None:
+        self._experience = value
+
     def save(self, path: str) -> None:
         # TODO: Better serialization.
         try:
             p = Path(path)
             with p.open("w", encoding="utf-8") as f:
                 f.write(
-                    f"{self._energy} {self._hitpoints} {self._balance} {self._level}\n"
+                    f"{self._energy} {self._hitpoints} {self._balance} {self._level} {self._experience}\n"
                 )
                 for item, quantity in self._inventory:
                     f.write(f"{item.name},{item.resource_path},{quantity}\n")
@@ -62,7 +70,7 @@ class Player:
             with Path(path).open("r", encoding="utf-8") as f:
                 data = f.read().splitlines()
 
-                self._energy, self._hitpoints, self._balance, self._level = map(
+                self._energy, self._hitpoints, self._balance, self._level, self._experience = map(
                     int, data[0].split()
                 )
 
