@@ -10,7 +10,7 @@ caption = "Kater"
 [fonts]
 player_attribute_font_size = 36
 sidebar_font_size = 24
-content_font_size = 30
+content_font_size = 28
 inventory_font_size = 16
 
 [globals]
@@ -28,7 +28,10 @@ size = 12
 [explore]
 short_energy = 10               # energy cost of the Short explore action
 short_duration = 10000          # 10s
+short_experience = 5            # how much experience is awarded per finished short explore action
 medium_energy = 20              # energy cost of the Medium explore action
-medium_duration = 600000        # 10min
-long_energy = 50                # energy cost of the Long explore action
-long_duration = 36000000        # 1h
+medium_duration = 20000         # 20s
+medium_experience = 20          # how much experience is awarded per finished medium explore action
+long_energy = 30                # energy cost of the Long explore action
+long_duration = 30000           # 30s
+long_experience = 30            # how much experience is awarded per finished long explore action
