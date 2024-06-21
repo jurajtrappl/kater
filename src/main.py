@@ -9,7 +9,7 @@ from engine.player import Player
 from engine.events import *
 from ui.inventory import InventoryGrid
 from ui.button import Button, SidebarButton
-from ui.label import PlayerAttributeLabel
+from ui.label import ExploreActionLabel, PlayerAttributeLabel
 
 
 def main() -> None:
@@ -23,18 +23,14 @@ def main() -> None:
         CONFIG = toml.load(f)
 
     # Run configurations.
-    global SCREEN, FONTS
-    SCREEN, FONTS = configure_pygame()
-    configure_engine()
+    global SCREEN, CLOCK, FONTS
+    SCREEN, CLOCK, FONTS = configure_pygame()
 
-    # For now, we only support one player in the game.
-    player = Player(Path("example_players/player1"))
+    global GAME_STATE
+    GAME_STATE = configure_engine()
 
     # Create UI objects.
     top_menu_objects, sidebar_objects, content_area_objects = init_ui_objects()
-
-    global GAME_STATE
-    GAME_STATE = { "clicked_sidebar_button": "Inventory", "explore": None, "player": player }
 
     running = True
     while running:
@@ -52,7 +48,8 @@ def main() -> None:
                 )
             elif event.type == REFILL_HITPOINTS:
                 GAME_STATE["player"].hitpoints = min(
-                    GAME_STATE["player"].hitpoints + CONFIG["rates"]["base_hitpoints_refill"],
+                    GAME_STATE["player"].hitpoints
+                    + CONFIG["rates"]["base_hitpoints_refill"],
                     CONFIG["caps"]["hitpoints"],
                 )
             elif event.type == pygame.MOUSEBUTTONUP:
@@ -66,26 +63,36 @@ def main() -> None:
                     clicked_sidebar_button[0].onclick(GAME_STATE)
 
                 clicked_content_button = [
-                    obj for obj in content_area_objects["Explore"] if obj.rect.collidepoint(pos)
+                    obj
+                    for obj in content_area_objects["Explore"]
+                    if isinstance(obj, Button) and obj.rect.collidepoint(pos)
                 ]
                 if clicked_content_button:
                     clicked_content_button[0].onclick(GAME_STATE)
             elif event.type == SHORT_EXPLORE:
                 GAME_STATE["explore"] = None
+                GAME_STATE["player"].experience += CONFIG["explore"]["short_experience"]
+                # TODO: add level up handling
             elif event.type == MEDIUM_EXPLORE:
                 GAME_STATE["explore"] = None
+                GAME_STATE["player"].experience += CONFIG["explore"][
+                    "medium_experience"
+                ]
+                # TODO: add level up handling
             elif event.type == LONG_EXPLORE:
                 GAME_STATE["explore"] = None
+                GAME_STATE["player"].experience += CONFIG["explore"]["long_experience"]
+                # TODO: add level up handling
 
         """
         2. Update objects.
         """
         for label in top_menu_objects:
-            label.update(GAME_STATE["player"])
+            label.update(GAME_STATE)
 
         for obj in content_area_objects[GAME_STATE["clicked_sidebar_button"]]:
             if not isinstance(obj, Button):
-                obj.update(GAME_STATE["player"])
+                obj.update(GAME_STATE)
 
         """
         3. Clear the screen.
@@ -97,14 +104,14 @@ def main() -> None:
         """
         # Draw objects in content area.
         for obj in content_area_objects[GAME_STATE["clicked_sidebar_button"]]:
-            obj.draw(SCREEN)
+            obj.draw(SCREEN, FONTS["content_font"])
 
         # Draw objects on screen (top menu labels + sidebar buttons).
         for obj in top_menu_objects:
             obj.draw(SCREEN, FONTS["player_attribute_font"])
 
         for obj in sidebar_objects:
-            obj.draw(SCREEN)
+            obj.draw(SCREEN, FONTS["sidebar_font"])
 
         # Separate top menu and side bar from content.
         pygame.draw.line(
@@ -119,6 +126,8 @@ def main() -> None:
         """
         pygame.display.flip()
 
+        CLOCK.tick(60)
+
 
 def configure_pygame():
     """
@@ -129,6 +138,8 @@ def configure_pygame():
     pygame.init()
     screen = pygame.display.set_mode(CONFIG["display"]["size"])
     pygame.display.set_caption(CONFIG["display"]["caption"])
+
+    clock = pygame.time.Clock()
 
     pygame.font.init()
     fonts = {
@@ -142,7 +153,7 @@ def configure_pygame():
         ),
     }
 
-    return screen, fonts
+    return screen, clock, fonts
 
 
 def configure_engine():
@@ -156,6 +167,16 @@ def configure_engine():
     # Add custom events.
     pygame.time.set_timer(REFILL_ENERGY, CONFIG["rates"]["energy"])
     pygame.time.set_timer(REFILL_HITPOINTS, CONFIG["rates"]["hitpoints"])
+
+    # For now, we only support one player in the game.
+    player = Player(Path("example_players/player1"))
+    game_state = {
+        "clicked_sidebar_button": "Inventory",  # remembers what sidebar button was clicked, default is the Inventory
+        "explore": None,  # remembers the time (in ticks) when an explore action was clicked (if there is one)
+        "player": player,  # remembers the player
+    }
+
+    return game_state
 
 
 def init_ui_objects() -> List[object]:
@@ -184,42 +205,29 @@ def init_ui_objects() -> List[object]:
         "level",
         pygame.Color("black"),
     )
-    top_menu_objects = [energy_label, hitpoints_label, balance_label, level_label]
+    experience_label = PlayerAttributeLabel(
+        1000, 15, "experience", pygame.Color("purple")
+    )
+    top_menu_objects = [
+        energy_label,
+        hitpoints_label,
+        balance_label,
+        level_label,
+        experience_label,
+    ]
 
     # 2. Sidebar buttons.
-    inventory_button = SidebarButton(
-        10,
-        70,
-        150,
-        50,
-        FONTS["sidebar_font"],
-        "Inventory"
-    )
-    travel_button = SidebarButton(
-        10,
-        130,
-        150,
-        50,
-        FONTS["sidebar_font"],
-        "Travel"
-    )
-    skills_button = SidebarButton(
-        10,
-        190,
-        150,
-        50,
-        FONTS["sidebar_font"],
-        "Skills"
-    )
+    inventory_button = SidebarButton(10, 70, 150, 50, "Inventory")
+    travel_button = SidebarButton(10, 130, 150, 50, "Travel")
+    skills_button = SidebarButton(10, 190, 150, 50, "Skills")
     explore_button = SidebarButton(
         10,
         250,
         150,
         50,
-        FONTS["sidebar_font"],
         "Explore",
     )
-    export_button = SidebarButton(10, 610, 150, 50, FONTS["sidebar_font"], "Export")
+    export_button = SidebarButton(10, 610, 150, 50, "Export")
     sidebar_objects = [
         inventory_button,
         travel_button,
@@ -233,37 +241,66 @@ def init_ui_objects() -> List[object]:
         InventoryGrid(CONFIG["inventory"]["size"], FONTS["inventory_font"])
     ]
     content_area_objects["Explore"] = [
-        Button(350, 250, 250, 50, FONTS["content_font"], "Short (5 min, 10e)", short_explore_onclick),
-        Button(350, 350, 250, 50, FONTS["content_font"], "Medium (30 min, 20e)", medium_explore_onclick),
-        Button(350, 450, 250, 50, FONTS["content_font"], "Long (1 h, 50e)", long_explore_onclick),
+        Button(
+            350,
+            250,
+            250,
+            50,
+            f'Short ({CONFIG["explore"]["short_duration"] // 1000}s, {CONFIG["explore"]["short_energy"]}e)',
+            short_explore_onclick,
+        ),
+        Button(
+            350,
+            350,
+            250,
+            50,
+            f'Medium ({CONFIG["explore"]["medium_duration"] // 1000}s, {CONFIG["explore"]["medium_energy"]}e)',
+            medium_explore_onclick,
+        ),
+        Button(
+            350,
+            450,
+            250,
+            50,
+            f'Long ({CONFIG["explore"]["long_duration"] // 1000}s, {CONFIG["explore"]["long_energy"]}e)',
+            long_explore_onclick,
+        ),
+        ExploreActionLabel(750, 375, pygame.Color("black")),
     ]
 
     return top_menu_objects, sidebar_objects, content_area_objects
 
+
 def short_explore_onclick(game_state):
     if game_state["explore"] is not None:
         return
-    
-    game_state["explore"] = "short"
 
     game_state["player"].energy -= CONFIG["explore"]["short_energy"]
+    game_state["explore"] = (
+        pygame.time.get_ticks() + CONFIG["explore"]["short_duration"]
+    )
     pygame.time.set_timer(SHORT_EXPLORE, CONFIG["explore"]["short_duration"])
+
 
 def medium_explore_onclick(game_state):
     if game_state["explore"] is not None:
         return
 
-    game_state["explore"] = "medium"
-
     game_state["player"].energy -= CONFIG["explore"]["medium_energy"]
+    game_state["explore"] = (
+        pygame.time.get_ticks() + CONFIG["explore"]["medium_duration"]
+    )
     pygame.time.set_timer(MEDIUM_EXPLORE, CONFIG["explore"]["medium_duration"])
+
 
 def long_explore_onclick(game_state):
     if game_state["explore"] is not None:
         return
 
     game_state["player"].energy -= CONFIG["explore"]["long_energy"]
+    game_state["explore"] = pygame.time.get_ticks() + CONFIG["explore"]["long_duration"]
     pygame.time.set_timer(LONG_EXPLORE, CONFIG["explore"]["long_duration"])
+
 
 if __name__ == "__main__":
     main()
