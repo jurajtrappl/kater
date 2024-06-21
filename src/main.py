@@ -274,7 +274,10 @@ def init_ui_objects() -> List[object]:
 def short_explore_onclick(game_state):
     if game_state["explore"] is not None:
         return
-
+    
+    if game_state["player"].energy < CONFIG["explore"]["short_energy"]:
+        return
+    
     game_state["player"].energy -= CONFIG["explore"]["short_energy"]
     game_state["explore"] = (
         pygame.time.get_ticks() + CONFIG["explore"]["short_duration"]
@@ -286,6 +289,9 @@ def medium_explore_onclick(game_state):
     if game_state["explore"] is not None:
         return
 
+    if game_state["player"].energy < CONFIG["explore"]["medium_energy"]:
+        return
+
     game_state["player"].energy -= CONFIG["explore"]["medium_energy"]
     game_state["explore"] = (
         pygame.time.get_ticks() + CONFIG["explore"]["medium_duration"]
@@ -295,6 +301,9 @@ def medium_explore_onclick(game_state):
 
 def long_explore_onclick(game_state):
     if game_state["explore"] is not None:
+        return
+
+    if game_state["player"].energy < CONFIG["explore"]["long_energy"]:
         return
 
     game_state["player"].energy -= CONFIG["explore"]["long_energy"]
