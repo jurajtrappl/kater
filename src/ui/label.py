@@ -15,7 +15,7 @@ class ExploreActionLabel:
 
     def update(self, game_state) -> None:
         if game_state["explore"] is None:
-            self._text_value = ""
+            self._text_value = "You are not exploring now."
         else:
             current_ticks = pygame.time.get_ticks()
             remaining_ticks = game_state["explore"] - current_ticks
