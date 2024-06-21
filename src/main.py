@@ -102,7 +102,13 @@ def main() -> None:
                 )
 
                 # show new amount as sort of a notification
-                GAME_STATE["blink_inventory_update_text"] = (FONTS["sidebar_font"].render(f"+{quantity}", True, pygame.Color("black")), 375, 310)
+                GAME_STATE["blink_inventory_update_text"] = (
+                    FONTS["sidebar_font"].render(
+                        f"+{quantity}", True, pygame.Color("black")
+                    ),
+                    375,
+                    310,
+                )
                 pygame.time.set_timer(BLINK_INVENTORY_UPDATE_TEXT, 1000, loops=1)
             elif event.type == SILVER_ORE_MINED:
                 GAME_STATE["mining"] = None
@@ -114,7 +120,13 @@ def main() -> None:
                     Item("Silver ore", "silver_ore.png"), quantity
                 )
 
-                GAME_STATE["blink_inventory_update_text"] = (FONTS["sidebar_font"].render(f"+{quantity}", True, pygame.Color("black")), 375, 360)
+                GAME_STATE["blink_inventory_update_text"] = (
+                    FONTS["sidebar_font"].render(
+                        f"+{quantity}", True, pygame.Color("black")
+                    ),
+                    375,
+                    360,
+                )
                 pygame.time.set_timer(BLINK_INVENTORY_UPDATE_TEXT, 1000, loops=1)
             elif event.type == BLINK_INVENTORY_UPDATE_TEXT:
                 GAME_STATE["blink_inventory_update_text"] = None
@@ -139,7 +151,9 @@ def main() -> None:
         """
         # Draw objects in content area.
         for obj in content_area_objects[GAME_STATE["clicked_sidebar_button"]]:
-            obj.draw(SCREEN, FONTS[f'{GAME_STATE["clicked_sidebar_button"].lower()}_font'])
+            obj.draw(
+                SCREEN, FONTS[f'{GAME_STATE["clicked_sidebar_button"].lower()}_font']
+            )
 
         # Draw objects on screen (top menu labels + sidebar buttons).
         for obj in top_menu_objects:
@@ -216,7 +230,7 @@ def configure_engine():
         "explore": None,  # remembers the end time of clicked explore action (if there is one)
         "player": player,  # remembers the player,
         "mining": None,  # remembers the end time of clicked mining action (if there is one)
-        "blink_inventory_update_text": None # shows a small amount of new items that were added to inventory shortly after the action was finished
+        "blink_inventory_update_text": None,  # shows a small amount of new items that were added to inventory shortly after the action was finished
     }
 
     return game_state
@@ -347,7 +361,7 @@ def init_ui_objects() -> List[object]:
             250,
             50,
             f'Short ({CONFIG["explore"]["duration"]["short"] // 1000}s, {CONFIG["explore"]["energy"]["short"]}e)',
-            short_explore_onclick,
+            on_explore("short", SHORT_EXPLORE),
         ),
         Button(
             350,
@@ -355,7 +369,7 @@ def init_ui_objects() -> List[object]:
             250,
             50,
             f'Medium ({CONFIG["explore"]["duration"]["medium"] // 1000}s, {CONFIG["explore"]["energy"]["medium"]}e)',
-            medium_explore_onclick,
+            on_explore("medium", MEDIUM_EXPLORE),
         ),
         Button(
             350,
@@ -363,58 +377,45 @@ def init_ui_objects() -> List[object]:
             250,
             50,
             f'Long ({CONFIG["explore"]["duration"]["long"] // 1000}s, {CONFIG["explore"]["energy"]["long"]}e)',
-            long_explore_onclick,
+            on_explore("long", LONG_EXPLORE),
         ),
         ExploreActionLabel(750, 370, pygame.Color("black")),
     ]
 
     return top_menu_objects, sidebar_objects, content_area_objects
 
+def on_explore(explore_type, explore_event):
+    def callback(game_state):
+        if game_state["explore"] is not None:
+            return
 
-def short_explore_onclick(game_state):
-    if game_state["explore"] is not None:
+        if game_state["player"].energy < CONFIG["explore"]["energy"][explore_type]:
+            return
+
+        game_state["player"].energy -= CONFIG["explore"]["energy"][explore_type]
+        game_state["explore"] = (
+            pygame.time.get_ticks() + CONFIG["explore"]["duration"][explore_type]
+        )
+        pygame.time.set_timer(
+            explore_event, CONFIG["explore"]["duration"][explore_type], loops=1
+        )
+
+    return callback
+
+def mine_copper_ore_onclick(game_state):
+    if game_state["mining"] is not None:
         return
 
-    if game_state["player"].energy < CONFIG["explore"]["energy"]["short"]:
+    if game_state["player"].energy < CONFIG["skills"]["mining"]["energy"]["copper_ore"]:
         return
 
-    game_state["player"].energy -= CONFIG["explore"]["energy"]["short"]
-    game_state["explore"] = (
-        pygame.time.get_ticks() + CONFIG["explore"]["duration"]["short"]
+    game_state["player"].energy -= CONFIG["skills"]["mining"]["energy"]["copper_ore"]
+    game_state["mining"] = (
+        pygame.time.get_ticks() + CONFIG["skills"]["mining"]["duration"]["copper_ore"]
     )
     pygame.time.set_timer(
-        SHORT_EXPLORE, CONFIG["explore"]["duration"]["short"], loops=1
+        COPPER_ORE_MINED, CONFIG["skills"]["mining"]["duration"]["copper_ore"], loops=1
     )
-
-
-def medium_explore_onclick(game_state):
-    if game_state["explore"] is not None:
-        return
-
-    if game_state["player"].energy < CONFIG["explore"]["energy"]["medium"]:
-        return
-
-    game_state["player"].energy -= CONFIG["explore"]["energy"]["medium"]
-    game_state["explore"] = (
-        pygame.time.get_ticks() + CONFIG["explore"]["duration"]["medium"]
-    )
-    pygame.time.set_timer(
-        MEDIUM_EXPLORE, CONFIG["explore"]["duration"]["medium"], loops=1
-    )
-
-
-def long_explore_onclick(game_state):
-    if game_state["explore"] is not None:
-        return
-
-    if game_state["player"].energy < CONFIG["explore"]["energy"]["long"]:
-        return
-
-    game_state["player"].energy -= CONFIG["explore"]["energy"]["long"]
-    game_state["explore"] = (
-        pygame.time.get_ticks() + CONFIG["explore"]["duration"]["long"]
-    )
-    pygame.time.set_timer(LONG_EXPLORE, CONFIG["explore"]["duration"]["long"], loops=1)
 
 
 def mine_copper_ore_onclick(game_state):
@@ -432,20 +433,6 @@ def mine_copper_ore_onclick(game_state):
         COPPER_ORE_MINED, CONFIG["skills"]["mining"]["duration"]["copper_ore"], loops=1
     )
 
-def mine_copper_ore_onclick(game_state):
-    if game_state["mining"] is not None:
-        return
-
-    if game_state["player"].energy < CONFIG["skills"]["mining"]["energy"]["copper_ore"]:
-        return
-
-    game_state["player"].energy -= CONFIG["skills"]["mining"]["energy"]["copper_ore"]
-    game_state["mining"] = (
-        pygame.time.get_ticks() + CONFIG["skills"]["mining"]["duration"]["copper_ore"]
-    )
-    pygame.time.set_timer(
-        COPPER_ORE_MINED, CONFIG["skills"]["mining"]["duration"]["copper_ore"], loops=1
-    )
 
 def mine_silver_ore_onclick(game_state):
     if game_state["mining"] is not None:
@@ -462,17 +449,22 @@ def mine_silver_ore_onclick(game_state):
         SILVER_ORE_MINED, CONFIG["skills"]["mining"]["duration"]["silver_ore"], loops=1
     )
 
+
 def chop_oak_log_onclick(game_state):
     pass
+
 
 def catch_carp_onclick(game_state):
     pass
 
+
 def pick_mugwort_onclick(game_state):
     pass
 
+
 def gather_quartz_onclick(game_state):
     pass
+
 
 if __name__ == "__main__":
     main()
