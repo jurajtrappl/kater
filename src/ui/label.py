@@ -1,7 +1,5 @@
 import pygame
 
-from engine.player import Player
-
 class ExploreActionLabel:
     def __init__(
         self,

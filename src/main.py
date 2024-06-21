@@ -279,7 +279,7 @@ def short_explore_onclick(game_state):
     game_state["explore"] = (
         pygame.time.get_ticks() + CONFIG["explore"]["short_duration"]
     )
-    pygame.time.set_timer(SHORT_EXPLORE, CONFIG["explore"]["short_duration"])
+    pygame.time.set_timer(SHORT_EXPLORE, CONFIG["explore"]["short_duration"], loops=1)
 
 
 def medium_explore_onclick(game_state):
@@ -290,7 +290,7 @@ def medium_explore_onclick(game_state):
     game_state["explore"] = (
         pygame.time.get_ticks() + CONFIG["explore"]["medium_duration"]
     )
-    pygame.time.set_timer(MEDIUM_EXPLORE, CONFIG["explore"]["medium_duration"])
+    pygame.time.set_timer(MEDIUM_EXPLORE, CONFIG["explore"]["medium_duration"], loops=1)
 
 
 def long_explore_onclick(game_state):
@@ -299,7 +299,7 @@ def long_explore_onclick(game_state):
 
     game_state["player"].energy -= CONFIG["explore"]["long_energy"]
     game_state["explore"] = pygame.time.get_ticks() + CONFIG["explore"]["long_duration"]
-    pygame.time.set_timer(LONG_EXPLORE, CONFIG["explore"]["long_duration"])
+    pygame.time.set_timer(LONG_EXPLORE, CONFIG["explore"]["long_duration"], loops=1)
 
 
 if __name__ == "__main__":
