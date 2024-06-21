@@ -42,13 +42,13 @@ class Button:
 
         screen.blit(self._button_surface, self._button_rect)
 
-    def onclick(self, game_state) -> None:
-        self._onclick(game_state)
+    def onclick(self) -> None:
+        self._onclick()
 
 
 class SidebarButton(Button):
-    def __init__(self, x: int, y: int, width: int, height: int, text: str) -> None:
-        def onclick(game_state) -> None:
+    def __init__(self, game_state, x: int, y: int, width: int, height: int, text: str) -> None:
+        def onclick() -> None:
             game_state["clicked_sidebar_button"] = self._text
 
         Button.__init__(self, x, y, width, height, text, onclick)

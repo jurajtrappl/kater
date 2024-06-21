@@ -32,7 +32,7 @@ def main() -> None:
     GAME_STATE = configure_engine()
 
     # Create UI objects.
-    top_menu_objects, sidebar_objects, content_area_objects = init_ui_objects()
+    top_menu, sidebar, content_area = init_ui_objects()
 
     running = True
     while running:
@@ -59,85 +59,72 @@ def main() -> None:
 
                 # Check whether any sidebar menu button was clicked.
                 clicked_sidebar_button = [
-                    obj for obj in sidebar_objects if obj.rect.collidepoint(pos)
+                    obj for obj in sidebar if obj.rect.collidepoint(pos)
                 ]
                 if clicked_sidebar_button:
-                    clicked_sidebar_button[0].onclick(GAME_STATE)
+                    clicked_sidebar_button[0].onclick()
 
                 clicked_content_button = [
                     obj
-                    for obj in content_area_objects[
-                        GAME_STATE["clicked_sidebar_button"]
-                    ]
+                    for obj in content_area[GAME_STATE["clicked_sidebar_button"]]
                     if isinstance(obj, Button) and obj.rect.collidepoint(pos)
                 ]
                 if clicked_content_button:
-                    clicked_content_button[0].onclick(GAME_STATE)
-            elif event.type == SHORT_EXPLORE:
-                GAME_STATE["explore"] = None
+                    clicked_content_button[0].onclick()
+            elif event.type == EXPLORE_FINISHED:
                 GAME_STATE["player"].experience += CONFIG["explore"]["experience"][
-                    "short"
+                    GAME_STATE["explore"]["item"]
                 ]
-                # TODO: add level up handling
-            elif event.type == MEDIUM_EXPLORE:
-                GAME_STATE["explore"] = None
-                GAME_STATE["player"].experience += CONFIG["explore"]["experience"][
-                    "medium"
-                ]
-                # TODO: add level up handling
-            elif event.type == LONG_EXPLORE:
-                GAME_STATE["explore"] = None
-                GAME_STATE["player"].experience += CONFIG["explore"]["experience"][
-                    "long"
-                ]
-                # TODO: add level up handling
-            elif event.type == COPPER_ORE_MINED:
-                GAME_STATE["mining"] = None
-                GAME_STATE["player"].experience += CONFIG["skills"]["mining"][
-                    "experience"
-                ]["copper_ore"]
+                GAME_STATE["explore"] = {}
+            elif event.type in [
+                ORE_MINED,
+                LOG_CHOPPED,
+                FISH_CAUGHT,
+                HERB_PICKED,
+                CRYSTAL_GATHERED,
+            ]:
+                event_i = [
+                    ORE_MINED,
+                    LOG_CHOPPED,
+                    FISH_CAUGHT,
+                    HERB_PICKED,
+                    CRYSTAL_GATHERED,
+                ].index(event.type)
+                skill = CONFIG["skills"][event_i]
+
+                item_number = GAME_STATE["skill_action"][skill]["item"]
+                item_name = CONFIG[skill]["items"][item_number]
+                item_resource = "_".join(map(str.lower, item_name.split())) + ".png"
                 quantity = 1
+
+                GAME_STATE["player"].experience += CONFIG[skill]["experience"][
+                    item_number
+                ]
                 GAME_STATE["player"].inventory.add(
-                    Item("Copper ore", "copper_ore.png"), quantity
+                    Item(item_name, item_resource), quantity
                 )
 
-                # show new amount as sort of a notification
+                # +1 notification
                 GAME_STATE["blink_inventory_update_text"] = (
                     FONTS["sidebar_font"].render(
                         f"+{quantity}", True, pygame.Color("black")
                     ),
-                    375,
-                    310,
+                    GAME_STATE["skill_action"][skill]["button_x"] + 125,
+                    GAME_STATE["skill_action"][skill]["button_y"] + 10,
                 )
                 pygame.time.set_timer(BLINK_INVENTORY_UPDATE_TEXT, 1000, loops=1)
-            elif event.type == SILVER_ORE_MINED:
-                GAME_STATE["mining"] = None
-                GAME_STATE["player"].experience += CONFIG["skills"]["mining"][
-                    "experience"
-                ]["silver_ore"]
-                quantity = 1
-                GAME_STATE["player"].inventory.add(
-                    Item("Silver ore", "silver_ore.png"), quantity
-                )
 
-                GAME_STATE["blink_inventory_update_text"] = (
-                    FONTS["sidebar_font"].render(
-                        f"+{quantity}", True, pygame.Color("black")
-                    ),
-                    375,
-                    360,
-                )
-                pygame.time.set_timer(BLINK_INVENTORY_UPDATE_TEXT, 1000, loops=1)
+                GAME_STATE["skill_action"][skill] = {}
             elif event.type == BLINK_INVENTORY_UPDATE_TEXT:
                 GAME_STATE["blink_inventory_update_text"] = None
 
         """
         2. Update objects.
         """
-        for label in top_menu_objects:
+        for label in top_menu:
             label.update(GAME_STATE)
 
-        for obj in content_area_objects[GAME_STATE["clicked_sidebar_button"]]:
+        for obj in content_area[GAME_STATE["clicked_sidebar_button"]]:
             if not isinstance(obj, Button) and not isinstance(obj, Image):
                 obj.update(GAME_STATE)
 
@@ -150,16 +137,16 @@ def main() -> None:
         4. Draw objects.
         """
         # Draw objects in content area.
-        for obj in content_area_objects[GAME_STATE["clicked_sidebar_button"]]:
+        for obj in content_area[GAME_STATE["clicked_sidebar_button"]]:
             obj.draw(
                 SCREEN, FONTS[f'{GAME_STATE["clicked_sidebar_button"].lower()}_font']
             )
 
         # Draw objects on screen (top menu labels + sidebar buttons).
-        for obj in top_menu_objects:
+        for obj in top_menu:
             obj.draw(SCREEN, FONTS["player_attribute_font"])
 
-        for obj in sidebar_objects:
+        for obj in sidebar:
             obj.draw(SCREEN, FONTS["sidebar_font"])
 
         # Separate top menu and side bar from content.
@@ -170,7 +157,8 @@ def main() -> None:
             SCREEN, pygame.Color("black"), (170, 50), (170, SCREEN.get_height())
         )
 
-        if GAME_STATE["blink_inventory_update_text"] is not None:
+        # +quantity notifications
+        if GAME_STATE["blink_inventory_update_text"] is not None and GAME_STATE["clicked_sidebar_button"] == "Skills":
             text, x, y = GAME_STATE["blink_inventory_update_text"]
             SCREEN.blit(text, (x, y))
 
@@ -227,9 +215,9 @@ def configure_engine():
     player = Player(Path("example_players/player1"))
     game_state = {
         "clicked_sidebar_button": "Inventory",  # remembers what sidebar button was clicked, default is the Inventory
-        "explore": None,  # remembers the end time of clicked explore action (if there is one)
+        "explore": {},  # remembers the end time of clicked explore action (if there is one)
         "player": player,  # remembers the player,
-        "mining": None,  # remembers the end time of clicked mining action (if there is one)
+        "skill_action": {skill: {} for skill in CONFIG["skills"]},
         "blink_inventory_update_text": None,  # shows a small amount of new items that were added to inventory shortly after the action was finished
     }
 
@@ -237,233 +225,113 @@ def configure_engine():
 
 
 def init_ui_objects() -> List[object]:
-    # 1. Top menu labels
-    energy_label = PlayerAttributeLabel(
-        200,
-        15,
-        "energy",
-        pygame.Color("yellow3"),
-    )
-    hitpoints_label = PlayerAttributeLabel(
-        400,
-        15,
-        "hitpoints",
-        pygame.Color("red"),
-    )
-    balance_label = PlayerAttributeLabel(
-        600,
-        15,
-        "balance",
-        pygame.Color("palegreen3"),
-    )
-    level_label = PlayerAttributeLabel(
-        800,
-        15,
-        "level",
-        pygame.Color("black"),
-    )
-    experience_label = PlayerAttributeLabel(
-        1000, 15, "experience", pygame.Color("purple")
-    )
-    top_menu_objects = [
-        energy_label,
-        hitpoints_label,
-        balance_label,
-        level_label,
-        experience_label,
+    top_menu = [
+        PlayerAttributeLabel(200 + i * 175, 15, attribute, pygame.Color(color))
+        for i, (attribute, color) in enumerate(
+            zip(
+                ["energy", "hitpoints", "balance", "level", "experience"],
+                ["yellow3", "red", "palegreen3", "black", "purple"],
+            )
+        )
     ]
 
-    # 2. Sidebar buttons.
-    inventory_button = SidebarButton(10, 70, 150, 50, "Inventory")
-    travel_button = SidebarButton(10, 130, 150, 50, "Travel")
-    skills_button = SidebarButton(10, 190, 150, 50, "Skills")
-    explore_button = SidebarButton(
-        10,
-        250,
-        150,
-        50,
-        "Explore",
-    )
-    export_button = SidebarButton(10, 610, 150, 50, "Export")
-    sidebar_objects = [
-        inventory_button,
-        travel_button,
-        skills_button,
-        explore_button,
-        export_button,
+    sidebar = [
+        SidebarButton(GAME_STATE, 10, 70 + i * 60, 150, 50, name)
+        for i, name in enumerate(CONFIG["sidebar"])
     ]
 
-    content_area_objects = {}
-    content_area_objects["Inventory"] = [
+    content_area = {}
+    content_area["Inventory"] = [
         InventoryGrid(CONFIG["inventory"]["size"], FONTS["inventory_font"])
     ]
 
-    content_area_objects["Skills"] = [
-        Image(250, 125, 100, 100, "mining_icon.png", "Mining"),
-        Button(
-            250,
-            300,
-            120,
-            35,
-            f'Copper ore ({CONFIG["skills"]["mining"]["energy"]["copper_ore"]}e, {CONFIG["skills"]["mining"]["duration"]["copper_ore"] // 1000}s)',
-            mine_copper_ore_onclick,
-        ),
-        Button(
-            250,
-            350,
-            120,
-            35,
-            f'Silver ore ({CONFIG["skills"]["mining"]["energy"]["silver_ore"]}e, {CONFIG["skills"]["mining"]["duration"]["silver_ore"] // 1000}s)',
-            mine_silver_ore_onclick,
-        ),
-        Image(450, 125, 100, 100, "woodcutting_icon.png", "Woodcutting"),
-        Button(
-            450,
-            300,
-            100,
-            35,
-            f'Oak log ({CONFIG["skills"]["woodcutting"]["energy"]["oak_log"]}e, {CONFIG["skills"]["woodcutting"]["duration"]["oak_log"] // 1000}s)',
-            chop_oak_log_onclick,
-        ),
-        Image(650, 125, 100, 100, "fishing_icon.png", "Fishing"),
-        Button(
-            650,
-            300,
-            100,
-            35,
-            f'Carp ({CONFIG["skills"]["fishing"]["energy"]["carp"]}e, {CONFIG["skills"]["fishing"]["duration"]["carp"] // 1000}s)',
-            catch_carp_onclick,
-        ),
-        Image(850, 125, 100, 100, "herbalism_icon.png", "Herbalism"),
-        Button(
-            850,
-            300,
-            100,
-            35,
-            f'Mugwort ({CONFIG["skills"]["herbalism"]["energy"]["mugwort"]}e, {CONFIG["skills"]["herbalism"]["duration"]["mugwort"] // 1000}s)',
-            pick_mugwort_onclick,
-        ),
-        Image(1050, 125, 100, 100, "divination_icon.png", "Divination"),
-        Button(
-            1050,
-            300,
-            100,
-            35,
-            f'Quartz ({CONFIG["skills"]["divination"]["energy"]["quartz"]}e, {CONFIG["skills"]["divination"]["duration"]["quartz"] // 1000}s)',
-            gather_quartz_onclick,
-        ),
+    content_area["Skills"] = [
+        Image(250 + i * 200, 125, 100, 100, f"{skill}_icon.png", skill.capitalize())
+        for i, skill in enumerate(CONFIG["skills"])
     ]
+    content_area["Skills"].extend(
+        [
+            Button(
+                250 + col * 200,
+                300 + row * 50,
+                120,
+                35,
+                f'{item} ({CONFIG[skill]["energy"][row]}e, {CONFIG[skill]["duration"][row] // 1000}s)',
+                on_skill_action(skill, event, row, 250 + col * 200, 300 + row * 50),
+            )
+            for col, (skill, event) in enumerate(
+                zip(
+                    CONFIG["skills"],
+                    [
+                        ORE_MINED,
+                        LOG_CHOPPED,
+                        FISH_CAUGHT,
+                        HERB_PICKED,
+                        CRYSTAL_GATHERED,
+                    ],
+                )
+            )
+            for row, item in enumerate(CONFIG[skill]["items"])
+        ]
+    )
 
-    content_area_objects["Explore"] = [
-        Button(
-            350,
-            250,
-            250,
-            50,
-            f'Short ({CONFIG["explore"]["duration"]["short"] // 1000}s, {CONFIG["explore"]["energy"]["short"]}e)',
-            on_explore("short", SHORT_EXPLORE),
-        ),
-        Button(
-            350,
-            350,
-            250,
-            50,
-            f'Medium ({CONFIG["explore"]["duration"]["medium"] // 1000}s, {CONFIG["explore"]["energy"]["medium"]}e)',
-            on_explore("medium", MEDIUM_EXPLORE),
-        ),
-        Button(
-            350,
-            450,
-            250,
-            50,
-            f'Long ({CONFIG["explore"]["duration"]["long"] // 1000}s, {CONFIG["explore"]["energy"]["long"]}e)',
-            on_explore("long", LONG_EXPLORE),
-        ),
-        ExploreActionLabel(750, 370, pygame.Color("black")),
-    ]
+    # Create UI for Explore content.
+    content_area["Explore"] = [ExploreActionLabel(750, 370, pygame.Color("black"))]
+    content_area["Explore"].extend(
+        [
+            Button(
+                350,
+                250 + i * 100,
+                250,
+                50,
+                f'{explore_type.capitalize()} ({CONFIG["explore"]["duration"][i] // 1000}s, {CONFIG["explore"]["energy"][i]}e)',
+                on_explore(i),
+            )
+            for i, explore_type in enumerate(["short", "medium", "long"])
+        ]
+    )
 
-    return top_menu_objects, sidebar_objects, content_area_objects
+    return top_menu, sidebar, content_area
 
-def on_explore(explore_type, explore_event):
-    def callback(game_state):
-        if game_state["explore"] is not None:
+
+def on_explore(item):
+    def callback():
+        if (
+            GAME_STATE["explore"]
+            or GAME_STATE["player"].energy < CONFIG["explore"]["energy"][item]
+        ):
             return
 
-        if game_state["player"].energy < CONFIG["explore"]["energy"][explore_type]:
-            return
-
-        game_state["player"].energy -= CONFIG["explore"]["energy"][explore_type]
-        game_state["explore"] = (
-            pygame.time.get_ticks() + CONFIG["explore"]["duration"][explore_type]
-        )
+        GAME_STATE["explore"] = {
+            "end": pygame.time.get_ticks() + CONFIG["explore"]["duration"][item],
+            "item": item,
+        }
+        GAME_STATE["player"].energy -= CONFIG["explore"]["energy"][item]
         pygame.time.set_timer(
-            explore_event, CONFIG["explore"]["duration"][explore_type], loops=1
+            EXPLORE_FINISHED, CONFIG["explore"]["duration"][item], loops=1
         )
 
     return callback
 
-def mine_copper_ore_onclick(game_state):
-    if game_state["mining"] is not None:
-        return
 
-    if game_state["player"].energy < CONFIG["skills"]["mining"]["energy"]["copper_ore"]:
-        return
+def on_skill_action(skill, event, item, button_x, button_y):
+    def callback():
+        if (
+            GAME_STATE["skill_action"][skill]
+            or GAME_STATE["player"].energy < CONFIG[skill]["energy"][item]
+        ):
+            return
 
-    game_state["player"].energy -= CONFIG["skills"]["mining"]["energy"]["copper_ore"]
-    game_state["mining"] = (
-        pygame.time.get_ticks() + CONFIG["skills"]["mining"]["duration"]["copper_ore"]
-    )
-    pygame.time.set_timer(
-        COPPER_ORE_MINED, CONFIG["skills"]["mining"]["duration"]["copper_ore"], loops=1
-    )
+        GAME_STATE["player"].energy -= CONFIG[skill]["energy"][item]
+        GAME_STATE["skill_action"][skill] = {
+            "end": pygame.time.get_ticks() + CONFIG[skill]["duration"][item],
+            "item": item,
+            "button_x": button_x,
+            "button_y": button_y,
+        }
+        pygame.time.set_timer(event, CONFIG[skill]["duration"][item], loops=1)
 
-
-def mine_copper_ore_onclick(game_state):
-    if game_state["mining"] is not None:
-        return
-
-    if game_state["player"].energy < CONFIG["skills"]["mining"]["energy"]["copper_ore"]:
-        return
-
-    game_state["player"].energy -= CONFIG["skills"]["mining"]["energy"]["copper_ore"]
-    game_state["mining"] = (
-        pygame.time.get_ticks() + CONFIG["skills"]["mining"]["duration"]["copper_ore"]
-    )
-    pygame.time.set_timer(
-        COPPER_ORE_MINED, CONFIG["skills"]["mining"]["duration"]["copper_ore"], loops=1
-    )
-
-
-def mine_silver_ore_onclick(game_state):
-    if game_state["mining"] is not None:
-        return
-
-    if game_state["player"].energy < CONFIG["skills"]["mining"]["energy"]["silver_ore"]:
-        return
-
-    game_state["player"].energy -= CONFIG["skills"]["mining"]["energy"]["silver_ore"]
-    game_state["mining"] = (
-        pygame.time.get_ticks() + CONFIG["skills"]["mining"]["duration"]["silver_ore"]
-    )
-    pygame.time.set_timer(
-        SILVER_ORE_MINED, CONFIG["skills"]["mining"]["duration"]["silver_ore"], loops=1
-    )
-
-
-def chop_oak_log_onclick(game_state):
-    pass
-
-
-def catch_carp_onclick(game_state):
-    pass
-
-
-def pick_mugwort_onclick(game_state):
-    pass
-
-
-def gather_quartz_onclick(game_state):
-    pass
+    return callback
 
 
 if __name__ == "__main__":
