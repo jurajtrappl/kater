@@ -10,12 +10,14 @@ class Button:
         height: int,
         font: pygame.font.Font,
         text: str,
+        onclick,
     ) -> None:
         self._x = x
         self._y = y
         self._width = width
         self._height = height
         self._text = text
+        self._onclick = onclick
 
         self._button_surface = pygame.Surface((self._width, self._height))
         self._button_rect = pygame.Rect(self._x, self._y, self._width, self._height)
@@ -37,10 +39,19 @@ class Button:
                 self._button_rect.width / 2 - self._button_surf.get_rect().width / 2,
                 self._button_rect.height / 2 - self._button_surf.get_rect().height / 2,
             ],
-
         )
 
         screen.blit(self._button_surface, self._button_rect)
 
-    def invoke(self, game_state) -> None:
-        game_state["clicked_sidebar_button"] = self._text
+    def onclick(self, game_state) -> None:
+        self._onclick(game_state)
+
+
+class SidebarButton(Button):
+    def __init__(
+        self, x: int, y: int, width: int, height: int, font: pygame.font.Font, text: str
+    ) -> None:
+        def onclick(game_state) -> None:
+            game_state["clicked_sidebar_button"] = self._text
+
+        Button.__init__(self, x, y, width, height, font, text, onclick)

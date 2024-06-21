@@ -19,8 +19,16 @@ seed = 38           # for reproducibility
 [rates]
 base_energy_refill = 1          # how much energy is going to refill per 1 time unit
 base_hitpoints_refill = 1       # how much hitpoints is going to refill per 1 time unit
-energy = 1000          # 1 energy per 1 second
-hitpoints = 1000       # 1 hitpoints per 1 second
+energy = 100          # 1 energy per 1 second
+hitpoints = 100       # 1 hitpoints per 1 second
 
 [inventory]
 size = 12
+
+[explore]
+short_energy = 10               # energy cost of the Short explore action
+short_duration = 10000          # 10s
+medium_energy = 20              # energy cost of the Medium explore action
+medium_duration = 600000        # 10min
+long_energy = 50                # energy cost of the Long explore action
+long_duration = 36000000        # 1h
