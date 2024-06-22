@@ -1,9 +1,6 @@
 from itertools import zip_longest
 import pygame
 
-from engine.player import Player
-
-
 class InventoryGrid:
     def __init__(self, size, font) -> None:
         self._size = size

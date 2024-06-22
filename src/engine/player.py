@@ -1,7 +1,7 @@
 from pathlib import Path
 
-from engine.inventory import Inventory
-from engine.item import Item
+from .inventory import Inventory
+from .item import Item
 
 
 class Player:
