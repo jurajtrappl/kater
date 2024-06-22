@@ -3,7 +3,9 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch:
+    workflow_dispatch:
+permissions:
+  contents: write
 
 jobs:
   build-pygbag:
@@ -11,16 +13,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Checkout
       run: |
             echo "Attempting to install pygbag"
             python -m pip install pygbag
-            echo "Successfully installed pygbag"
-            echo "Attempting to build the game"
-            echo $GITHUB_WORKSPACE
             python -m pygbag --build $GITHUB_WORKSPACE
-            echo "Successfully build the game and complied to WebAssembly"
 
     - name : "Upload to GitHub pages branch gh-pages"
       uses: JamesIves/github-pages-deploy-action@4.1.7
