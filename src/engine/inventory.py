@@ -1,6 +1,6 @@
 from typing import Dict, Tuple
 
-from engine.item import Item
+from .item import Item
 
 
 class Inventory:
