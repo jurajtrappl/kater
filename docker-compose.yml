@@ -1,0 +1,20 @@
+version: '3.6'
+services:
+    #TODO cors error
+    kater-web:
+      image: "kater-web"
+      build:
+        context: .
+        dockerfile: Dockerfile
+        target: docker-web
+      ports: 
+        - "8000:8000"
+    
+    kater-xming:
+      image: "kater-xming"
+      build:
+        context: .
+        dockerfile: Dockerfile
+        target: docker-xming
+      ports: 
+        - "8001:8000"
