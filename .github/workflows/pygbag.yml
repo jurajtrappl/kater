@@ -7,17 +7,23 @@ on:
 
 jobs:
   build-pygbag:
-    name: Kater
+    name: Kater Game
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v2
     - name: Checkout
       run: |
+            echo "Attempting to install pygbag"
             python -m pip install pygbag
-            python -m pygbag --build $GITHUB_WORKSPACE/main.py
+            echo "Successfully installed pygbag"
+            echo "Attempting to build the game"
+            echo $GITHUB_WORKSPACE
+            python -m pygbag --build $GITHUB_WORKSPACE
+            echo "Successfully build the game and complied to WebAssembly"
+
     - name : "Upload to GitHub pages branch gh-pages"
       uses: JamesIves/github-pages-deploy-action@4.1.7
       with:
-        branch: gh-pages
+        branch: origin/gh-pages
         folder: build/web
