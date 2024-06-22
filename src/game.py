@@ -1,28 +1,26 @@
+import asyncio
+
 from pathlib import Path
 import random
 from typing import List
-import toml
 import pygame
 import sys
 
-from engine.item import Item
-from engine.player import Player
-from engine.events import *
-from ui.image import Image
-from ui.inventory import InventoryGrid
-from ui.button import Button, SidebarButton
-from ui.label import ExploreActionLabel, PlayerAttributeLabel
+from .engine import *
+
+from .ui import *
 
 
-def main() -> None:
+async def main() -> None:
     """
     Game entry function.
     """
 
     # Load configuration.
     global CONFIG
-    with open("config.toml", "r", encoding="utf-8") as f:
-        CONFIG = toml.load(f)
+    CONFIG = toml_copy
+    #TODO use object to access values
+    #CONFIG = Config()
 
     # Run configurations.
     global SCREEN, CLOCK, FONTS
@@ -158,7 +156,10 @@ def main() -> None:
         )
 
         # +quantity notifications
-        if GAME_STATE["blink_inventory_update_text"] is not None and GAME_STATE["clicked_sidebar_button"] == "Skills":
+        if (
+            GAME_STATE["blink_inventory_update_text"] is not None
+            and GAME_STATE["clicked_sidebar_button"] == "Skills"
+        ):
             text, x, y = GAME_STATE["blink_inventory_update_text"]
             SCREEN.blit(text, (x, y))
 
@@ -168,6 +169,7 @@ def main() -> None:
         pygame.display.flip()
 
         CLOCK.tick(60)
+        await asyncio.sleep(0)
 
 
 def configure_pygame():
@@ -335,4 +337,4 @@ def on_skill_action(skill, event, item, button_x, button_y):
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
