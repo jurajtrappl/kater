@@ -7,7 +7,6 @@ import pygame
 import sys
 
 from .engine import *
-
 from .ui import *
 
 
@@ -18,9 +17,7 @@ async def main() -> None:
 
     # Load configuration.
     global CONFIG
-    CONFIG = toml_copy
-    #TODO use object to access values
-    #CONFIG = Config()
+    CONFIG = Config()
 
     # Run configurations.
     global SCREEN, CLOCK, FONTS
@@ -43,14 +40,14 @@ async def main() -> None:
                 sys.exit()
             elif event.type == REFILL_ENERGY:
                 GAME_STATE["player"].energy = min(
-                    GAME_STATE["player"].energy + CONFIG["rates"]["base_energy_refill"],
-                    CONFIG["caps"]["energy"],
+                    GAME_STATE["player"].energy + CONFIG.rates.base_energy_refill,
+                    CONFIG.caps.energy,
                 )
             elif event.type == REFILL_HITPOINTS:
                 GAME_STATE["player"].hitpoints = min(
                     GAME_STATE["player"].hitpoints
-                    + CONFIG["rates"]["base_hitpoints_refill"],
-                    CONFIG["caps"]["hitpoints"],
+                    + CONFIG.rates.base_hitpoints_refill,
+                    CONFIG.caps.hitpoints,
                 )
             elif event.type == pygame.MOUSEBUTTONUP:
                 pos = pygame.mouse.get_pos()
@@ -70,7 +67,7 @@ async def main() -> None:
                 if clicked_content_button:
                     clicked_content_button[0].onclick()
             elif event.type == EXPLORE_FINISHED:
-                GAME_STATE["player"].experience += CONFIG["explore"]["experience"][
+                GAME_STATE["player"].experience += CONFIG.explore.experience[
                     GAME_STATE["explore"]["item"]
                 ]
                 GAME_STATE["explore"] = {}
@@ -88,14 +85,14 @@ async def main() -> None:
                     HERB_PICKED,
                     CRYSTAL_GATHERED,
                 ].index(event.type)
-                skill = CONFIG["skills"][event_i]
+                skill = CONFIG.skills[event_i]
 
                 item_number = GAME_STATE["skill_action"][skill]["item"]
-                item_name = CONFIG[skill]["items"][item_number]
+                item_name = getattr(CONFIG, skill).items[item_number]
                 item_resource = "_".join(map(str.lower, item_name.split())) + ".png"
                 quantity = 1
 
-                GAME_STATE["player"].experience += CONFIG[skill]["experience"][
+                GAME_STATE["player"].experience += getattr(CONFIG, skill).experience[
                     item_number
                 ]
                 GAME_STATE["player"].inventory.add(
@@ -179,23 +176,23 @@ def configure_pygame():
     """
 
     pygame.init()
-    screen = pygame.display.set_mode(CONFIG["display"]["size"])
-    pygame.display.set_caption(CONFIG["display"]["caption"])
+    screen = pygame.display.set_mode(CONFIG.display.size)
+    pygame.display.set_caption(CONFIG.display.caption)
 
     clock = pygame.time.Clock()
 
     pygame.font.init()
     fonts = {
         "player_attribute_font": pygame.font.SysFont(
-            None, CONFIG["fonts"]["player_attribute_font_size"]
+            None, CONFIG.fonts.player_attribute_font_size
         ),
-        "sidebar_font": pygame.font.SysFont(None, CONFIG["fonts"]["sidebar_font_size"]),
-        "content_font": pygame.font.SysFont(None, CONFIG["fonts"]["content_font_size"]),
+        "sidebar_font": pygame.font.SysFont(None, CONFIG.fonts.sidebar_font_size),
+        "content_font": pygame.font.SysFont(None, CONFIG.fonts.content_font_size),
         "inventory_font": pygame.font.SysFont(
-            None, CONFIG["fonts"]["inventory_font_size"]
+            None, CONFIG.fonts.inventory_font_size
         ),
-        "skills_font": pygame.font.SysFont(None, CONFIG["fonts"]["skills_font_size"]),
-        "explore_font": pygame.font.SysFont(None, CONFIG["fonts"]["explore_font_size"]),
+        "skills_font": pygame.font.SysFont(None, CONFIG.fonts.skills_font_size),
+        "explore_font": pygame.font.SysFont(None, CONFIG.fonts.explore_font_size),
     }
 
     return screen, clock, fonts
@@ -207,11 +204,11 @@ def configure_engine():
     """
 
     # Reproducibility.
-    random.seed(CONFIG["globals"]["seed"])
+    random.seed(CONFIG.globals.seed)
 
     # Add custom events.
-    pygame.time.set_timer(REFILL_ENERGY, CONFIG["rates"]["energy"])
-    pygame.time.set_timer(REFILL_HITPOINTS, CONFIG["rates"]["hitpoints"])
+    pygame.time.set_timer(REFILL_ENERGY, CONFIG.rates.energy)
+    pygame.time.set_timer(REFILL_HITPOINTS, CONFIG.rates.hitpoints)
 
     # For now, we only support one player in the game.
     player = Player(Path("example_players/player1"))
@@ -219,7 +216,7 @@ def configure_engine():
         "clicked_sidebar_button": "Inventory",  # remembers what sidebar button was clicked, default is the Inventory
         "explore": {},  # remembers the end time of clicked explore action (if there is one)
         "player": player,  # remembers the player,
-        "skill_action": {skill: {} for skill in CONFIG["skills"]},
+        "skill_action": {skill: {} for skill in CONFIG.skills},
         "blink_inventory_update_text": None,  # shows a small amount of new items that were added to inventory shortly after the action was finished
     }
 
@@ -239,17 +236,17 @@ def init_ui_objects() -> List[object]:
 
     sidebar = [
         SidebarButton(GAME_STATE, 10, 70 + i * 60, 150, 50, name)
-        for i, name in enumerate(CONFIG["sidebar"])
+        for i, name in enumerate(CONFIG.sidebar)
     ]
 
     content_area = {}
     content_area["Inventory"] = [
-        InventoryGrid(CONFIG["inventory"]["size"], FONTS["inventory_font"])
+        InventoryGrid(CONFIG.inventory.size, FONTS["inventory_font"])
     ]
 
     content_area["Skills"] = [
         Image(250 + i * 200, 125, 100, 100, f"{skill}_icon.png", skill.capitalize())
-        for i, skill in enumerate(CONFIG["skills"])
+        for i, skill in enumerate(CONFIG.skills)
     ]
     content_area["Skills"].extend(
         [
@@ -258,12 +255,12 @@ def init_ui_objects() -> List[object]:
                 300 + row * 50,
                 120,
                 35,
-                f'{item} ({CONFIG[skill]["energy"][row]}e, {CONFIG[skill]["duration"][row] // 1000}s)',
+                f'{item} ({getattr(CONFIG, skill).energy[row]}e, {getattr(CONFIG, skill).duration[row] // 1000}s)',
                 on_skill_action(skill, event, row, 250 + col * 200, 300 + row * 50),
             )
             for col, (skill, event) in enumerate(
                 zip(
-                    CONFIG["skills"],
+                    CONFIG.skills,
                     [
                         ORE_MINED,
                         LOG_CHOPPED,
@@ -273,11 +270,10 @@ def init_ui_objects() -> List[object]:
                     ],
                 )
             )
-            for row, item in enumerate(CONFIG[skill]["items"])
+            for row, item in enumerate(getattr(CONFIG, skill).items)
         ]
     )
 
-    # Create UI for Explore content.
     content_area["Explore"] = [ExploreActionLabel(750, 370, pygame.Color("black"))]
     content_area["Explore"].extend(
         [
@@ -286,10 +282,10 @@ def init_ui_objects() -> List[object]:
                 250 + i * 100,
                 250,
                 50,
-                f'{explore_type.capitalize()} ({CONFIG["explore"]["duration"][i] // 1000}s, {CONFIG["explore"]["energy"][i]}e)',
+                f'{explore_type.capitalize()} ({CONFIG.explore.duration[i] // 1000}s, {CONFIG.explore.energy[i]}e)',
                 on_explore(i),
             )
-            for i, explore_type in enumerate(["short", "medium", "long"])
+            for i, explore_type in enumerate(CONFIG.explore.items)
         ]
     )
 
@@ -300,17 +296,17 @@ def on_explore(item):
     def callback():
         if (
             GAME_STATE["explore"]
-            or GAME_STATE["player"].energy < CONFIG["explore"]["energy"][item]
+            or GAME_STATE["player"].energy < CONFIG.explore.energy[item]
         ):
             return
 
         GAME_STATE["explore"] = {
-            "end": pygame.time.get_ticks() + CONFIG["explore"]["duration"][item],
+            "end": pygame.time.get_ticks() + CONFIG.explore.duration[item],
             "item": item,
         }
-        GAME_STATE["player"].energy -= CONFIG["explore"]["energy"][item]
+        GAME_STATE["player"].energy -= CONFIG.explore.energy[item]
         pygame.time.set_timer(
-            EXPLORE_FINISHED, CONFIG["explore"]["duration"][item], loops=1
+            EXPLORE_FINISHED, CONFIG.explore.duration[item], loops=1
         )
 
     return callback
@@ -320,18 +316,18 @@ def on_skill_action(skill, event, item, button_x, button_y):
     def callback():
         if (
             GAME_STATE["skill_action"][skill]
-            or GAME_STATE["player"].energy < CONFIG[skill]["energy"][item]
+            or GAME_STATE["player"].energy < getattr(CONFIG, skill).energy[item]
         ):
             return
 
-        GAME_STATE["player"].energy -= CONFIG[skill]["energy"][item]
+        GAME_STATE["player"].energy -= getattr(CONFIG, skill).energy[item]
         GAME_STATE["skill_action"][skill] = {
-            "end": pygame.time.get_ticks() + CONFIG[skill]["duration"][item],
+            "end": pygame.time.get_ticks() + getattr(CONFIG, skill).duration[item],
             "item": item,
             "button_x": button_x,
             "button_y": button_y,
         }
-        pygame.time.set_timer(event, CONFIG[skill]["duration"][item], loops=1)
+        pygame.time.set_timer(event, getattr(CONFIG, skill).duration[item], loops=1)
 
     return callback
 
