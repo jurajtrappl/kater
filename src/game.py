@@ -200,6 +200,7 @@ def configure_engine():
 
     # For now, we only support one player in the game.
     player = Player(Path("example_players/player1"))
+    print(player.skills_progress)
     game_state = {
         "clicked_sidebar_button": "Inventory",  # remembers what sidebar button was clicked, default is the Inventory
         "explore": {},  # remembers the end time of clicked explore action (if there is one)

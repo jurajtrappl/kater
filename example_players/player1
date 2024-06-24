@@ -1,11 +1,12 @@
 100 100 0 1 51
+mining (1, 0);woodcutting (1, 0);fishing (1, 0);herbalism (1, 0);divination (1, 0)
 Copper Ore,copper_ore.png,4
 Oak Log,oak_log.png,4
 Carp,carp.png,3
-Mugwort,mugwort.png,2
-Quartz,quartz.png,4
+Mugwort,herbs/1.png,2
+Quartz,minerals/Icon1.png,4
 Maple Log,maple_log.png,2
-Thistle,thistle.png,3
+Thistle,herbs/2.png,3
 Silver Ore,silver_ore.png,2
 Salmon,salmon.png,3
-Jade,jade.png,2
+Jade,minerals/Icon2.png,2
