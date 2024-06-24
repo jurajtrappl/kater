@@ -1,20 +1,63 @@
 version: '3.6'
 services:
-    #TODO cors error
-    kater-web:
-      image: "kater-web"
-      build:
-        context: .
-        dockerfile: Dockerfile
-        target: docker-web
-      ports: 
-        - "8000:8000"
+  postgres:
+    image: postgres:13
+    container_name: postgres
+    env_file:
+      - .env.local
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - kater-network
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    volumes:
+      - pgadmin_date:/var/lib/pgadmin
+    env_file:
+      - .env.local
+    networks:
+      - kater-network
+
+  kater-be:
+    image: django:latest
+    container_name: django
+    environment:
+      DEBUG: "1"
+      SECRET_KEY: "your_secret_key"
+      ALLOWED_HOSTS: "localhost 127.0.0.1"
+      DB_NAME: mydb
+      DB_USER: myuser
+      DB_PASSWORD: mypassword
+      DB_HOST: postgres
+      DB_PORT: 5432
+    volumes:
+      - /backend/kater/:/app
+    command: bash -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+    networks:
+      - kater-network
     
-    kater-xming:
-      image: "kater-xming"
-      build:
-        context: .
-        dockerfile: Dockerfile
-        target: docker-xming
-      ports: 
-        - "8001:8000"
+  kater-fe:
+    image: "kater-xming"
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: docker-xming
+    ports: 
+      - "8001:8000"
+
+volumes:
+  postgres_data:
+  pgadmin_date:
+
+networks:
+  kater-network:
