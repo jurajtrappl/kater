@@ -17,6 +17,5 @@ __all__ = [
     "HERB_PICKED",
     "CRYSTAL_GATHERED",
     "BLINK_INVENTORY_UPDATE_TEXT",
-    "toml_copy",
     "Config"
 ]

@@ -11,16 +11,6 @@ class ConfigDisplay:
         self.caption = "Kater"
 
 
-class ConfigFonts:
-    def __init__(self) -> None:
-        self.player_attribute_font_size = 36
-        self.sidebar_font_size = 24
-        self.content_font_size = 28
-        self.inventory_font_size = 16
-        self.skills_font_size = 18
-        self.explore_font_size = 20
-
-
 class ConfigGlobals:
     def __init__(self):
         self.seed = 38  # for reproducibility
@@ -40,7 +30,7 @@ class ConfigRates:
 
 class ConfigInventory:
     def __init__(self) -> None:
-        self.size = 12
+        self.size = 24
 
 
 class ConfigSkill:
@@ -52,12 +42,11 @@ class ConfigSkill:
 
 class Config:
     def __init__(self):
-        self.sidebar = ["Inventory", "Travel", "Skills", "Explore", "Export"]
+        self.sidebar = ["Inventory", "Travel", "Skills", "Explore"]
         self.skills = ["mining", "woodcutting", "fishing", "herbalism", "divination"]
 
         self.caps = ConfigCaps()
         self.display = ConfigDisplay()
-        self.fonts = ConfigFonts()
         self.globals = ConfigGlobals()
         self.rates = ConfigRates()
         self.inventory = ConfigInventory()

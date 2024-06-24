@@ -181,19 +181,7 @@ def configure_pygame():
 
     clock = pygame.time.Clock()
 
-    pygame.font.init()
-    fonts = {
-        "player_attribute_font": pygame.font.SysFont(
-            None, CONFIG.fonts.player_attribute_font_size
-        ),
-        "sidebar_font": pygame.font.SysFont(None, CONFIG.fonts.sidebar_font_size),
-        "content_font": pygame.font.SysFont(None, CONFIG.fonts.content_font_size),
-        "inventory_font": pygame.font.SysFont(
-            None, CONFIG.fonts.inventory_font_size
-        ),
-        "skills_font": pygame.font.SysFont(None, CONFIG.fonts.skills_font_size),
-        "explore_font": pygame.font.SysFont(None, CONFIG.fonts.explore_font_size),
-    }
+    fonts = init_fonts()
 
     return screen, clock, fonts
 
@@ -225,11 +213,11 @@ def configure_engine():
 
 def init_ui_objects() -> List[object]:
     top_menu = [
-        PlayerAttributeLabel(200 + i * 175, 15, attribute, pygame.Color(color))
+        PlayerAttributeLabel(200 + i * 225, 15, attribute, pygame.Color(color))
         for i, (attribute, color) in enumerate(
             zip(
-                ["energy", "hitpoints", "balance", "level", "experience"],
-                ["yellow3", "red", "palegreen3", "black", "purple"],
+                ["hitpoints", "balance", "energy", "level"],
+                ["red", "palegreen3", "yellow3", "black"],
             )
         )
     ]

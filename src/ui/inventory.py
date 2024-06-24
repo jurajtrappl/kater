@@ -17,9 +17,9 @@ class InventoryGrid:
         self._font = self._font or font
 
         # make square slots for items
-        rows, cols = self._size // 4, 4
-        slot_width, slot_height = 80, 80
-        padding = 20
+        rows, cols = self._size // 6, 6
+        slot_width, slot_height = 100, 100
+        padding = 50
         start_x, start_y = 300, 100
         item_rects = []
         for i in range(rows):
