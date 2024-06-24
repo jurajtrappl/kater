@@ -25,20 +25,21 @@ services:
       - kater-network
 
   kater-be:
-    image: django:latest
+    image: python:latest
     container_name: django
-    environment:
-      DEBUG: "1"
-      SECRET_KEY: "your_secret_key"
-      ALLOWED_HOSTS: "localhost 127.0.0.1"
-      DB_NAME: mydb
-      DB_USER: myuser
-      DB_PASSWORD: mypassword
-      DB_HOST: postgres
-      DB_PORT: 5432
+    env_file:
+      - .env.local
+    working_dir: "/app" 
     volumes:
-      - /backend/kater/:/app
-    command: bash -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+      - ./backend/kater:/app
+    #command: bash -c "sleep infinity"
+    command: > 
+      bash -c "
+        pip install --trusted-host pypi.python.org --upgrade pip && 
+        pip install --trusted-host pypi.python.org --no-cache-dir -r requirements.txt && 
+        python manage.py migrate && 
+        python manage.py runserver 0.0.0.0:8000
+      "
     ports:
       - "8000:8000"
     depends_on:
