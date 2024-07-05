@@ -16,7 +16,10 @@
 import { defineComponent } from 'vue';
 import { RouterLink, RouterView } from 'vue-router'
 
-export default defineComponent({})
+export default defineComponent({
+  name: "App",
+  components: { }
+})
 </script>
 
 <style scoped>
@@ -44,6 +47,7 @@ nav a {
   display: inline;
   padding: 0 1rem;
   border-left: 1px solid var(--color-border);
+  text-decoration: none;
 }
 
 nav a:first-of-type {
