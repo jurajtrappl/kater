@@ -1,8 +1,6 @@
 <template>
     <div class="welcome-page">
         <h1>Welcome!</h1>
-        <button @click="navigateToLogin">Login</button>
-        <button @click="navigateToRegister">Register</button>
     </div>
 </template>
 
@@ -10,15 +8,7 @@
 import { defineComponent } from 'vue'
 
 export default defineComponent({
-    name: "WelcomePage",
-    methods: {
-        navigateToLogin() {
-            console.log("Navigating to login...")
-        },
-        navigateToRegister() {
-            console.log("Navigating to register...")
-        }
-    }
+    name: "TheWelcome",
 });
 </script>
 
