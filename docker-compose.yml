@@ -34,12 +34,12 @@ services:
     working_dir: "/app" 
     volumes:
       - ./backend/kater:/app
-    #command: bash -c "sleep infinity"
+    # command: bash -c "sleep infinity"
     command: > 
       bash -c "
         pip install --trusted-host pypi.python.org --upgrade pip && 
         pip install --trusted-host pypi.python.org --no-cache-dir -r requirements.txt &&
-        python manage.py makemigrations &&
+        python manage.py makemigrations api &&
         python manage.py migrate && 
         python manage.py runserver 0.0.0.0:8000
       "
