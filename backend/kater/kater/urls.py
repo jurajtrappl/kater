@@ -1,15 +1,8 @@
-"""
-URL configuration for kater project.
-"""
 from django.contrib import admin
-from django.urls import path, include
-from rest_framework import routers
+from django.urls import path
 from api import views
 
-router = routers.DefaultRouter()
-router.register(r'users', views.UserViewSet)
-
 urlpatterns = [
-    path('', include(router.urls)),
+    path('register/', views.RegisterView.as_view(), name="register"),
     path('admin/', admin.site.urls),
 ]
