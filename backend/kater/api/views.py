@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 import jwt
 
-from api.serializers import UserSerializer
+from api.serializers import PlayerSerializer, UserSerializer
 
 
 class RegisterView(APIView):
@@ -43,7 +43,8 @@ class LoginView(APIView):
         response.data = {"jwt": token}
 
         return response
-    
+
+
 class UserView(APIView):
     def get(self, request):
         token = request.COOKIES.get("jwt")
@@ -56,15 +57,18 @@ class UserView(APIView):
             raise AuthenticationFailed("Unauthenticated!")
 
         user = User.objects.get(pk=payload["id"])
-        serializer = UserSerializer(user)
+        user_serializer = UserSerializer(user)
+        player_serializer = PlayerSerializer(user.player)
 
-        return Response(serializer.data, status.HTTP_200_OK)
-    
+        return Response(
+            {"user": user_serializer.data, "player": player_serializer.data},
+            status.HTTP_200_OK,
+        )
+
+
 class LogoutView(APIView):
     def post(self, request):
         response = Response(status=status.HTTP_200_OK)
         response.delete_cookie("jwt")
-        response.data = {
-            "message": "success"
-        }
+        response.data = {"message": "success"}
         return response
