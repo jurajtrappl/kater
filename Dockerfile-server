@@ -1,0 +1,23 @@
+FROM --platform=$BUILDPLATFORM python:3.12.3-slim AS kater-be
+EXPOSE 8000
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+       gcc \
+       libpq-dev \
+       build-essential \
+       curl \
+       git \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN pip install --upgrade pip
+
+WORKDIR /app 
+RUN git clone https://github.com/jurajtrappl/kater .
+
+WORKDIR /app/backend/kater 
+RUN pip3 install -r requirements.txt --no-cache-dir
+
+ENTRYPOINT ["python3"] 
+CMD ["manage.py", "runserver", "0.0.0.0:8000"]

@@ -63,6 +63,17 @@ services:
         npm install &&
         npm run dev -- --host --port 80
       "
+  
+  kater-be-server:
+    hostname: kater-be
+    container_name: kater-server
+    build:
+      context: .
+      target: kater-be
+    env_file:
+      - .env.local
+    networks:
+      - kater-network
 
 volumes:
   postgres_data:
