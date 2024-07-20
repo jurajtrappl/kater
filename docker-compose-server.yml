@@ -24,6 +24,18 @@ services:
     networks:
       - kater-network
 
+  frontend:
+    hostname: kater-fe
+    container_name: kater
+    build:
+      dockerfile: Dockerfile-server
+      context: .
+      target: vue-build
+    env_file:
+      - .env.local
+    networks:
+      - kater-network
+
 volumes:
   postgres_data:
   pgadmin_date:
